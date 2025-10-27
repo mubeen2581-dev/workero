@@ -206,7 +206,9 @@ const InvoicesPage: React.FC = () => {
               <Button variant="secondary" icon={Calendar} className="hidden sm:flex">
                 Schedule
               </Button>
-              <Button variant="secondary" icon={Calendar} className="sm:hidden p-2" />
+              <Button variant="secondary" icon={Calendar} className="sm:hidden p-2">
+                <span className="sr-only">Schedule</span>
+              </Button>
               <Button variant="primary" icon={Plus} onClick={handleAddInvoice} className="flex-1 sm:flex-none">
                 <span className="hidden sm:inline">Create Invoice</span>
                 <span className="sm:hidden">Create</span>

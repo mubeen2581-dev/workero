@@ -283,7 +283,9 @@ const QuotesList: React.FC = () => {
                 <Button variant="secondary" size="sm" icon={Download} className="hidden sm:flex">
                   Export
                 </Button>
-                <Button variant="secondary" size="sm" icon={Download} className="sm:hidden p-2" />
+                <Button variant="secondary" size="sm" icon={Download} className="sm:hidden p-2">
+                  <span className="sr-only">Export</span>
+                </Button>
               </div>
             </div>
           </div>

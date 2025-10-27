@@ -36,7 +36,7 @@ class NotificationService {
 
     const notification = notifications[status as keyof typeof notifications];
     if (notification) {
-      useUIStore.getState().addNotification(notification);
+      useUIStore.getState().addNotification({ ...notification, isRead: false });
     }
   }
 
@@ -45,7 +45,8 @@ class NotificationService {
     useUIStore.getState().addNotification({
       title: 'Payment Received',
       message: `Payment of £${amount.toFixed(2)} received from ${customerName} for Invoice #${invoiceId}.`,
-      type: 'success'
+      type: 'success',
+      isRead: false
     });
   }
 
@@ -53,7 +54,8 @@ class NotificationService {
     useUIStore.getState().addNotification({
       title: 'Payment Failed',
       message: `Payment of £${amount.toFixed(2)} from ${customerName} for Invoice #${invoiceId} failed.`,
-      type: 'error'
+      type: 'error',
+      isRead: false
     });
   }
 
@@ -61,7 +63,8 @@ class NotificationService {
     useUIStore.getState().addNotification({
       title: 'Payment Overdue',
       message: `Invoice #${invoiceId} from ${customerName} is ${daysOverdue} days overdue.`,
-      type: 'warning'
+      type: 'warning',
+      isRead: false
     });
   }
 
@@ -70,7 +73,8 @@ class NotificationService {
     useUIStore.getState().addNotification({
       title: `New ${isWhatsApp ? 'WhatsApp' : 'Message'}`,
       message: `${senderName}: ${messagePreview.substring(0, 50)}${messagePreview.length > 50 ? '...' : ''}`,
-      type: 'message'
+      type: 'info',
+      isRead: false
     });
   }
 
@@ -78,7 +82,8 @@ class NotificationService {
     useUIStore.getState().addNotification({
       title: 'Message Failed',
       message: `Failed to send message to ${recipientName}: ${reason}`,
-      type: 'error'
+      type: 'error',
+      isRead: false
     });
   }
 
@@ -87,7 +92,8 @@ class NotificationService {
     useUIStore.getState().addNotification({
       title: 'System Update',
       message: `${updateType}: ${details}`,
-      type: 'info'
+      type: 'info',
+      isRead: false
     });
   }
 
@@ -101,7 +107,8 @@ class NotificationService {
     useUIStore.getState().addNotification({
       title: 'Integration Status',
       message: statusMessages[status],
-      type: status === 'connected' ? 'success' : 'warning'
+      type: status === 'connected' ? 'success' : 'warning',
+      isRead: false
     });
   }
 
@@ -110,7 +117,8 @@ class NotificationService {
     useUIStore.getState().addNotification({
       title: 'New Lead',
       message: `New lead: ${leadName} from ${source}`,
-      type: 'info'
+      type: 'info',
+      isRead: false
     });
   }
 
@@ -118,7 +126,8 @@ class NotificationService {
     useUIStore.getState().addNotification({
       title: 'Lead Converted',
       message: `${leadName} has been converted to Job #${jobId}`,
-      type: 'success'
+      type: 'success',
+      isRead: false
     });
   }
 
@@ -127,7 +136,8 @@ class NotificationService {
     useUIStore.getState().addNotification({
       title: 'Quote Generated',
       message: `Quote #${quoteId} for ${customerName} - £${amount.toFixed(2)}`,
-      type: 'info'
+      type: 'info',
+      isRead: false
     });
   }
 
@@ -135,7 +145,8 @@ class NotificationService {
     useUIStore.getState().addNotification({
       title: 'Quote Accepted',
       message: `Quote #${quoteId} from ${customerName} has been accepted!`,
-      type: 'success'
+      type: 'success',
+      isRead: false
     });
   }
 
@@ -143,7 +154,8 @@ class NotificationService {
     useUIStore.getState().addNotification({
       title: 'Quote Expired',
       message: `Quote #${quoteId} for ${customerName} has expired.`,
-      type: 'warning'
+      type: 'warning',
+      isRead: false
     });
   }
 
@@ -153,42 +165,50 @@ class NotificationService {
       {
         title: 'Job Completed',
         message: 'Job #1234 for John Smith has been completed successfully.',
-        type: 'success' as const
+        type: 'success' as const,
+        isRead: false
       },
       {
         title: 'Payment Received',
         message: 'Payment of £1,250.00 received from ABC Company for Invoice #INV-001.',
-        type: 'success' as const
+        type: 'success' as const,
+        isRead: false
       },
       {
         title: 'New WhatsApp Message',
         message: 'Sarah Johnson: Hi, I need to reschedule my appointment for tomorrow.',
-        type: 'message' as const
+        type: 'info' as const,
+        isRead: false
       },
       {
         title: 'Job Started',
         message: 'Job #1235 for Mike Wilson is now in progress.',
-        type: 'info' as const
+        type: 'info' as const,
+        isRead: false
       },
       {
         title: 'Payment Overdue',
         message: 'Invoice #INV-002 from TechCorp is 5 days overdue.',
-        type: 'warning' as const
+        type: 'warning' as const,
+        isRead: false
       },
       {
         title: 'New Lead',
         message: 'New lead: Emma Davis from Website',
-        type: 'info' as const
+        type: 'info' as const,
+        isRead: false
       },
       {
         title: 'Quote Accepted',
         message: 'Quote #Q-456 from Green Solutions has been accepted!',
-        type: 'success' as const
+        type: 'success' as const,
+        isRead: false
       },
       {
         title: 'WhatsApp Integration',
         message: 'WhatsApp Business API connection restored.',
-        type: 'success' as const
+        type: 'success' as const,
+        isRead: false
       }
     ];
 

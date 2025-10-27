@@ -30,7 +30,7 @@ export const WhatsHubService = {
       senderId: me.id,
       sender: me,
       content: input.body || '',
-      type: input.type,
+      type: input.type === 'template' ? 'text' : input.type,
       timestamp: now,
       isRead: true,
       metadata: input.attachments?.[0]

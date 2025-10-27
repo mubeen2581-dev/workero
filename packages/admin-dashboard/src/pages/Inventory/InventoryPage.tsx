@@ -111,7 +111,9 @@ const InventoryPage: React.FC = () => {
             <Button variant="secondary" size="sm" icon={Download} className="hidden sm:flex">
               Export
             </Button>
-            <Button variant="secondary" size="sm" icon={Download} className="sm:hidden p-2" />
+            <Button variant="secondary" size="sm" icon={Download} className="sm:hidden p-2">
+              <span className="sr-only">Export</span>
+            </Button>
             <Button variant="primary" size="sm" icon={Plus} className="flex-1 sm:flex-none">
               <span className="hidden sm:inline">Add Item</span>
               <span className="sm:hidden">Add</span>

@@ -107,7 +107,7 @@ export interface ScheduleEvent {
   jobId?: string;
   technicianId?: string;
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
-  type: 'job' | 'break' | 'training' | 'maintenance';
+  type: 'job' | 'break' | 'training' | 'maintenance' | 'meeting';
   description?: string;
   location?: string;
   color?: string;
@@ -151,12 +151,22 @@ export interface Material {
   category: string;
 }
 
+export interface InvoiceItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  taxRate: number;
+  lineTotal: number;
+}
+
 export interface Invoice {
   id: string;
   jobId: string;
   job: Job;
   clientId: string;
   client: Client;
+  items: InvoiceItem[];
   amount: number;
   taxAmount: number;
   total: number;
@@ -174,13 +184,88 @@ export interface InventoryItem {
   name: string;
   description: string;
   sku: string;
+  barcode?: string;
   category: string;
   quantity: number;
+  currentStock: number;
   minQuantity: number;
+  minStock: number;
   maxQuantity: number;
+  maxStock: number;
   unitPrice: number;
-  location: 'warehouse' | 'van_1' | 'van_2' | 'van_3';
+  costPrice: number;
+  reorderPoint: number;
+  location: 'warehouse' | 'van_1' | 'van_2' | 'van_3' | 'A-1-15' | 'B-2-08' | 'C-3-12' | 'D-4-25' | 'E-5-18' | 'F-6-02';
   lastAuditDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StockMovement {
+  id: string;
+  itemId: string;
+  item: InventoryItem;
+  type: 'in' | 'out' | 'transfer';
+  quantity: number;
+  fromLocation?: string;
+  toLocation?: string;
+  reason: string;
+  reference?: string;
+  performedBy: string;
+  performedAt: string;
+  createdAt: string;
+  notes?: string;
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  website?: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  paymentTerms: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  supplierId: string;
+  supplier: Supplier;
+  items: {
+    itemId: string;
+    item: InventoryItem;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+  }[];
+  totalAmount: number;
+  status: 'draft' | 'sent' | 'confirmed' | 'received' | 'cancelled';
+  orderDate: string;
+  expectedDelivery: string;
+  receivedDate?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  color?: string;
+  itemCount?: number;
+  parentId?: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }

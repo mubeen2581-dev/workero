@@ -150,7 +150,9 @@ const QuoteBuilder: React.FC = () => {
               onClick={handleSaveDraft}
               loading={isSaving}
               className="sm:hidden p-2"
-            />
+            >
+              <span className="sr-only">Save Draft</span>
+            </Button>
             <Button
               variant="secondary"
               icon={Eye}
@@ -164,7 +166,9 @@ const QuoteBuilder: React.FC = () => {
               icon={Eye}
               onClick={handlePreviewQuote}
               className="sm:hidden p-2"
-            />
+            >
+              <span className="sr-only">Preview</span>
+            </Button>
             {items.length > 0 && (
               <Button
                 variant="secondary"

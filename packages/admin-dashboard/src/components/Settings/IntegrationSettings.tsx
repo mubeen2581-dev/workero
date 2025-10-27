@@ -341,14 +341,18 @@ const IntegrationSettings: React.FC<IntegrationSettingsProps> = ({
                     size="sm"
                     icon={Edit}
                     onClick={() => handleEditIntegration(integration.id)}
-                  />
+                  >
+                    <span className="sr-only">Edit</span>
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     icon={Trash2}
                     onClick={() => handleDeleteIntegration(integration.id)}
                     className="text-red-600 hover:text-red-700"
-                  />
+                  >
+                    <span className="sr-only">Delete</span>
+                  </Button>
                 </div>
               </div>
             </Card>

@@ -14,6 +14,8 @@ export const mockScheduleEvents: ScheduleEvent[] = [
     description: 'Complete kitchen renovation including custom oak cabinets, granite countertops, stainless steel sink, backsplash installation, and electrical work.',
     location: '123 Main St, New York, NY 10001',
     color: '#3B82F6',
+    createdAt: '2024-12-01T00:00:00Z',
+    updatedAt: '2024-12-01T00:00:00Z',
   },
   {
     id: 'event-2',
@@ -27,6 +29,8 @@ export const mockScheduleEvents: ScheduleEvent[] = [
     description: 'Complete bathroom remodel with new vanity, tile flooring, shower tile, and toilet installation. Water damage repair required.',
     location: '456 Oak Ave, Los Angeles, CA 90210',
     color: '#EF4444',
+    createdAt: '2024-12-01T00:00:00Z',
+    updatedAt: '2024-12-01T00:00:00Z',
   },
   {
     id: 'event-3',
@@ -40,6 +44,8 @@ export const mockScheduleEvents: ScheduleEvent[] = [
     description: 'Upgrade electrical panel to 200 amp service, install GFCI outlets, and run new wiring for kitchen appliances.',
     location: '789 Pine St, Chicago, IL 60601',
     color: '#10B981',
+    createdAt: '2024-12-01T00:00:00Z',
+    updatedAt: '2024-12-01T00:00:00Z',
   },
   {
     id: 'event-4',
@@ -53,6 +59,8 @@ export const mockScheduleEvents: ScheduleEvent[] = [
     description: 'High-end kitchen renovation with custom cabinetry, premium quartz countertops, and luxury appliance package.',
     location: '321 Elm St, Houston, TX 77001',
     color: '#F59E0B',
+    createdAt: '2024-12-01T00:00:00Z',
+    updatedAt: '2024-12-01T00:00:00Z',
   },
   {
     id: 'event-5',
@@ -66,6 +74,8 @@ export const mockScheduleEvents: ScheduleEvent[] = [
     description: 'Emergency plumbing repair due to water damage. Replace damaged pipes and assess water damage.',
     location: '654 Maple Dr, Phoenix, AZ 85001',
     color: '#EF4444',
+    createdAt: '2024-12-01T00:00:00Z',
+    updatedAt: '2024-12-01T00:00:00Z',
   },
   {
     id: 'event-6',
@@ -79,6 +89,8 @@ export const mockScheduleEvents: ScheduleEvent[] = [
     description: 'Annual HVAC system maintenance including filter replacement, duct cleaning, and system inspection.',
     location: '987 Cedar Ln, Miami, FL 33101',
     color: '#8B5CF6',
+    createdAt: '2024-12-01T00:00:00Z',
+    updatedAt: '2024-12-01T00:00:00Z',
   },
   {
     id: 'event-7',
@@ -91,6 +103,8 @@ export const mockScheduleEvents: ScheduleEvent[] = [
     description: 'Weekly team meeting to discuss project updates and scheduling.',
     location: 'Office',
     color: '#6B7280',
+    createdAt: '2024-12-01T00:00:00Z',
+    updatedAt: '2024-12-01T00:00:00Z',
   },
   {
     id: 'event-8',
@@ -103,6 +117,8 @@ export const mockScheduleEvents: ScheduleEvent[] = [
     description: 'Safety training session for new equipment.',
     location: 'Training Center',
     color: '#8B5CF6',
+    createdAt: '2024-12-01T00:00:00Z',
+    updatedAt: '2024-12-01T00:00:00Z',
   },
 ];
 
@@ -114,6 +130,8 @@ export const mockAvailability: Availability[] = [
     startTime: '09:00',
     endTime: '17:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-2',
@@ -122,6 +140,8 @@ export const mockAvailability: Availability[] = [
     startTime: '09:00',
     endTime: '17:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-3',
@@ -130,6 +150,8 @@ export const mockAvailability: Availability[] = [
     startTime: '09:00',
     endTime: '17:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-4',
@@ -138,6 +160,8 @@ export const mockAvailability: Availability[] = [
     startTime: '09:00',
     endTime: '17:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-5',
@@ -146,6 +170,8 @@ export const mockAvailability: Availability[] = [
     startTime: '09:00',
     endTime: '17:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-6',
@@ -154,6 +180,8 @@ export const mockAvailability: Availability[] = [
     startTime: '08:00',
     endTime: '16:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-7',
@@ -162,6 +190,8 @@ export const mockAvailability: Availability[] = [
     startTime: '08:00',
     endTime: '16:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-8',
@@ -170,6 +200,8 @@ export const mockAvailability: Availability[] = [
     startTime: '08:00',
     endTime: '16:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-9',
@@ -178,6 +210,8 @@ export const mockAvailability: Availability[] = [
     startTime: '08:00',
     endTime: '16:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-10',
@@ -186,6 +220,8 @@ export const mockAvailability: Availability[] = [
     startTime: '08:00',
     endTime: '16:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-11',
@@ -194,6 +230,8 @@ export const mockAvailability: Availability[] = [
     startTime: '10:00',
     endTime: '18:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-12',
@@ -202,6 +240,8 @@ export const mockAvailability: Availability[] = [
     startTime: '10:00',
     endTime: '18:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-13',
@@ -210,6 +250,8 @@ export const mockAvailability: Availability[] = [
     startTime: '10:00',
     endTime: '18:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-14',
@@ -218,6 +260,8 @@ export const mockAvailability: Availability[] = [
     startTime: '10:00',
     endTime: '18:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-15',
@@ -226,6 +270,8 @@ export const mockAvailability: Availability[] = [
     startTime: '10:00',
     endTime: '18:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-16',
@@ -234,6 +280,8 @@ export const mockAvailability: Availability[] = [
     startTime: '07:00',
     endTime: '15:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-17',
@@ -242,6 +290,8 @@ export const mockAvailability: Availability[] = [
     startTime: '07:00',
     endTime: '15:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-18',
@@ -250,6 +300,8 @@ export const mockAvailability: Availability[] = [
     startTime: '07:00',
     endTime: '15:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-19',
@@ -258,6 +310,8 @@ export const mockAvailability: Availability[] = [
     startTime: '07:00',
     endTime: '15:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
     id: 'avail-20',
@@ -266,6 +320,8 @@ export const mockAvailability: Availability[] = [
     startTime: '07:00',
     endTime: '15:00',
     isAvailable: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
 ];
 
@@ -285,17 +341,21 @@ export const mockRecurringJobs: RecurringJob[] = [
         city: 'New York',
         state: 'NY',
         zipCode: '10001',
+        country: 'USA',
       },
+      tags: ['corporate', 'recurring'],
+      leadScore: 85,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
     },
-    technicianId: 'tech-1',
     frequency: 'weekly',
     dayOfWeek: 1, // Monday
     startTime: '18:00',
-    endTime: '20:00',
     duration: 2,
     isActive: true,
     nextOccurrence: new Date('2024-12-23T18:00:00Z'),
     createdAt: '2024-12-01T00:00:00Z',
+    updatedAt: '2024-12-01T00:00:00Z',
   },
   {
     id: 'recurring-2',
@@ -312,17 +372,21 @@ export const mockRecurringJobs: RecurringJob[] = [
         city: 'Los Angeles',
         state: 'CA',
         zipCode: '90210',
+        country: 'USA',
       },
+      tags: ['commercial', 'maintenance'],
+      leadScore: 92,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
     },
-    technicianId: 'tech-2',
     frequency: 'monthly',
     dayOfWeek: 1, // First Monday of month
     startTime: '09:00',
-    endTime: '12:00',
     duration: 3,
     isActive: true,
     nextOccurrence: new Date('2025-01-06T09:00:00Z'),
     createdAt: '2024-11-01T00:00:00Z',
+    updatedAt: '2024-11-01T00:00:00Z',
   },
   {
     id: 'recurring-3',
@@ -339,17 +403,21 @@ export const mockRecurringJobs: RecurringJob[] = [
         city: 'Chicago',
         state: 'IL',
         zipCode: '60601',
+        country: 'USA',
       },
+      tags: ['industrial', 'safety'],
+      leadScore: 78,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
     },
-    technicianId: 'tech-3',
     frequency: 'quarterly',
     dayOfWeek: 1, // First Monday of quarter
     startTime: '08:00',
-    endTime: '16:00',
     duration: 8,
     isActive: true,
     nextOccurrence: new Date('2025-01-06T08:00:00Z'),
     createdAt: '2024-10-01T00:00:00Z',
+    updatedAt: '2024-10-01T00:00:00Z',
   },
 ];
 
@@ -425,12 +493,13 @@ export const generateRecurringEvents = (recurringJob: RecurringJob, startDate: D
         title: recurringJob.title,
         start: eventStart,
         end: eventEnd,
-        technicianId: recurringJob.technicianId,
         status: 'scheduled',
-        type: 'recurring',
+        type: 'job',
         description: recurringJob.description,
         location: recurringJob.client.address.street,
         color: '#8B5CF6',
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
       });
     }
     

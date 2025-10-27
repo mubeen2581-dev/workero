@@ -201,7 +201,9 @@ const RoutePreview: React.FC<RoutePreviewProps> = ({
               size="sm"
               onClick={resetPlayback}
               icon={RotateCcw}
-            />
+            >
+              <span className="sr-only">Reset</span>
+            </Button>
           </div>
         </div>
 

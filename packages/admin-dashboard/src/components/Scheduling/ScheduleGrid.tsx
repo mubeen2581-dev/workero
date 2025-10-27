@@ -313,7 +313,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
                             transition={{ duration: 0.2, delay: eventIndex * 0.1 }}
                             className="p-2 bg-blue-100 rounded-lg cursor-move hover:bg-blue-200 transition-colors"
                             draggable
-                            onDragStart={(e) => handleDragStart(e, event)}
+                            onDragStart={(e) => handleDragStart(e as React.DragEvent<HTMLDivElement>, event)}
                             onClick={() => onEventClick?.(event)}
                           >
                             <div className="relative">

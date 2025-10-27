@@ -63,7 +63,7 @@ const CompliancePage: React.FC = () => {
           <Select value={type} onChange={(v) => setType(v)} options={[{ value: 'all', label: 'All Types' }, { value: 'insurance', label: 'Insurance' }, { value: 'certification', label: 'Certification' }, { value: 'license', label: 'License' }, { value: 'rams', label: 'RAMS' }, { value: 'other', label: 'Other' }]} />
         </div>
         <div className="flex items-center gap-2">
-          <Select value={uploadEntityType} onChange={(v) => setUploadEntityType(v)} options={[
+          <Select value={uploadEntityType} onChange={(v) => setUploadEntityType(v as 'user'|'company'|'vehicle'|'job')} options={[
             { value: 'company', label: 'Company' },
             { value: 'user', label: 'User' },
             { value: 'vehicle', label: 'Vehicle' },

@@ -29,7 +29,11 @@ export function useTimelineQuery(invoiceId: string) {
 export function useRecordPaymentMutation(invoiceId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ amount, method, reference }: { amount: number; method: any; reference?: string }) => XEPayService.recordPayment?.(invoiceId, amount, method, reference) || Promise.resolve(),
+    mutationFn: ({ amount, method, reference }: { amount: number; method: any; reference?: string }) => {
+      // TODO: Implement payment recording in XEPayService
+      console.log('Recording payment:', { invoiceId, amount, method, reference });
+      return Promise.resolve();
+    },
     onSuccess: async () => {
       await Promise.all([
         qc.invalidateQueries({ queryKey: invoiceKeys.byId(invoiceId) }),

@@ -248,7 +248,7 @@ const BusinessConfiguration: React.FC<BusinessConfigurationProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
                 <Select
                   value={businessSettings.currency}
-                  onChange={(e) => handleBusinessChange('currency', e.target.value)}
+                  onChange={(value) => handleBusinessChange('currency', value)}
                   options={getCurrencyOptions()}
                 />
               </div>
@@ -257,7 +257,7 @@ const BusinessConfiguration: React.FC<BusinessConfigurationProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-2">Timezone</label>
                 <Select
                   value={businessSettings.timezone}
-                  onChange={(e) => handleBusinessChange('timezone', e.target.value)}
+                  onChange={(value) => handleBusinessChange('timezone', value)}
                   options={getTimezoneOptions()}
                 />
               </div>
