@@ -1,0 +1,47 @@
+{
+  "name": "workero-platform",
+  "version": "1.0.0",
+  "description": "Workero - All-in-one field service management platform",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=packages/admin-dashboard",
+    "dev:admin": "npm run dev --workspace=packages/admin-dashboard",
+    "dev:driver": "npm run dev --workspace=packages/driver-app",
+    "dev:client": "npm run dev --workspace=packages/client-portal",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build": "npm run build --workspaces",
+    "build:admin": "npm run build --workspace=packages/admin-dashboard",
+    "build:driver": "npm run build --workspace=packages/driver-app",
+    "build:client": "npm run build --workspace=packages/client-portal",
+    "build:backend": "npm run build --workspace=backend",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "clean": "npm run clean --workspaces",
+    "install:all": "npm install && npm install --workspaces"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/workero/platform.git"
+  },
+  "keywords": [
+    "field-service",
+    "contractor-management",
+    "workero",
+    "xepos-cloud",
+    "monorepo"
+  ],
+  "author": "Workero Team",
+  "license": "MIT"
+}
