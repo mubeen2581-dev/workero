@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  workero-admin:
+    image: nginx:alpine
+    container_name: workero-admin
+    ports:
+      - "3000:80"
+    volumes:
+      - ./admin-dashboard:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+
+  # Future: Backend API service
+  # workero-api:
+  #   build: ./backend
+  #   container_name: workero-api
+  #   ports:
+  #     - "3001:3001"
+  #   environment:
+  #     - NODE_ENV=production
+  #   restart: unless-stopped
+
+networks:
+  workero-network:
+    driver: bridge
