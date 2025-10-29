@@ -1,0 +1,181 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Lint and Test Job
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup npm cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint Admin Dashboard
+        run: npm run lint --workspace=packages/admin-dashboard
+
+      - name: Type check Admin Dashboard
+        run: npm run type-check --workspace=packages/admin-dashboard
+
+      - name: Test Admin Dashboard
+        run: npm run test:ci --workspace=packages/admin-dashboard
+
+      - name: Lint Driver App
+        run: npm run lint --workspace=packages/driver-app
+
+      - name: Type check Driver App
+        run: npm run type-check --workspace=packages/driver-app
+
+  # Build Job
+  build:
+    name: Build Applications
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    strategy:
+      matrix:
+        app: [admin-dashboard, driver-app]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup npm cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build ${{ matrix.app }}
+        run: npm run build --workspace=packages/${{ matrix.app }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.app }}-build
+          path: packages/${{ matrix.app }}/dist
+          retention-days: 7
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: admin-dashboard-build
+          path: packages/admin-dashboard/dist
+
+      - name: Deploy Admin Dashboard to Staging
+        run: |
+          echo "Deploying Admin Dashboard to staging..."
+          # Add your staging deployment commands here
+          # Example: rsync, scp, or cloud provider CLI commands
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: admin-dashboard-build
+          path: packages/admin-dashboard/dist
+
+      - name: Deploy Admin Dashboard to Production
+        run: |
+          echo "Deploying Admin Dashboard to production..."
+          # Add your production deployment commands here
+          # Example: AWS S3, Vercel, Netlify, or other hosting service
+
+  # Build and Deploy Driver App
+  deploy-driver-app:
+    name: Deploy Driver App
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup npm cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Driver App for Android
+        run: |
+          cd packages/driver-app
+          eas build --platform android --non-interactive
+
+      - name: Build Driver App for iOS
+        run: |
+          cd packages/driver-app
+          eas build --platform ios --non-interactive
+
+      - name: Submit to App Stores
+        run: |
+          cd packages/driver-app
+          eas submit --platform all --non-interactive
