@@ -225,8 +225,8 @@ const InvoicesPage: React.FC = () => {
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Total Invoices</p>
                 <p className="text-lg sm:text-2xl font-bold text-gray-900">{mockInvoices.length}</p>
               </div>
-              <div className="p-2 sm:p-3 bg-primary-100 rounded-xl">
-                <FileText className="w-4 h-4 sm:w-6 sm:h-6 text-primary-600" />
+              <div className="p-2 sm:p-3 rounded-xl" style={{ backgroundColor: '#F3F0FF' }}>
+                <FileText className="w-4 h-4 sm:w-6 sm:h-6" style={{ color: '#8552C5' }} />
               </div>
             </div>
           </Card>
@@ -289,7 +289,7 @@ const InvoicesPage: React.FC = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2 whitespace-nowrap ${
                       activeTab === tab.id
-                        ? 'border-primary-500 text-primary-600'
+                        ? 'border-purple-500 text-purple-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >

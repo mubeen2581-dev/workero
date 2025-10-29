@@ -79,9 +79,10 @@ const LiveMapPage: React.FC = () => {
                 onClick={() => setViewMode(option.id as ViewMode)}
                 className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                   viewMode === option.id
-                    ? 'text-primary-600 border-b-2 border-primary-600 bg-primary-50'
+                    ? 'text-purple-600 border-b-2 border-purple-600'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
+                style={viewMode === option.id ? { backgroundColor: '#F3F0FF' } : {}}
               >
                 <option.icon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                 <span className="hidden sm:inline">{option.label}</span>

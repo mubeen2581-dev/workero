@@ -58,7 +58,7 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({ className = '' }) => {
         <h3 className="text-base sm:text-lg font-semibold text-gray-900">Summary</h3>
       </div>
 
-      <div className="bg-gray-900 text-white m-4 rounded-2xl p-4 sm:p-6">
+      <div className="m-4 rounded-2xl p-4 sm:p-6" style={{ background: 'linear-gradient(135deg, #BC6FE8 0%, #9F7AEA 100%)', color: '#FFFFFF' }}>
         <ul className="space-y-4">
           {items.map((item) => (
             <li key={item.id} className="flex items-start space-x-3">
@@ -66,8 +66,8 @@ const SummaryPanel: React.FC<SummaryPanelProps> = ({ className = '' }) => {
                 <item.icon className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-white font-semibold text-sm sm:text-base">{item.value}</div>
-                <div className="text-gray-300 text-xs sm:text-sm">{item.label}</div>
+                <div className="font-semibold text-sm sm:text-base" style={{ color: '#FFFFFF' }}>{item.value}</div>
+                <div className="text-xs sm:text-sm" style={{ color: '#F3E8FF' }}>{item.label}</div>
               </div>
             </li>
           ))}

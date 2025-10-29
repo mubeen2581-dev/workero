@@ -23,7 +23,7 @@ const Topbar: React.FC = () => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-2">
+    <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3">
       <div className="flex items-center justify-between">
         {/* Left Section */}
         <div className="flex items-center space-x-2 sm:space-x-4">
@@ -74,7 +74,9 @@ const Topbar: React.FC = () => {
             icon={Plus}
             onClick={handleQuickAction}
             className="sm:hidden p-2"
-          />
+          >
+            <span className="sr-only">Create</span>
+          </Button>
 
           {/* Notifications */}
           <div className="relative">

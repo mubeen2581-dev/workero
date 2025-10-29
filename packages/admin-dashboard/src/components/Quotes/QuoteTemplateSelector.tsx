@@ -66,9 +66,10 @@ const QuoteTemplateSelector: React.FC<QuoteTemplateSelectorProps> = ({
                 key={template.id}
                 className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 ${
                   isSelected
-                    ? 'border-primary-300 bg-primary-50'
-                    : 'border-gray-200 hover:border-primary-200 hover:bg-gray-50'
+                    ? 'border-purple-300'
+                    : 'border-gray-200 hover:border-purple-200 hover:bg-gray-50'
                 }`}
+                style={isSelected ? { backgroundColor: '#F3F0FF' } : {}}
                 onClick={() => handleTemplateSelect(template.id)}
               >
                 <div className="flex items-center justify-between mb-2">

@@ -53,7 +53,7 @@ const VanStockPage: React.FC = () => {
             { id: 'transfers', label: 'Transfers' },
             { id: 'audit', label: 'Audit Log' },
           ].map((t) => (
-            <button key={t.id} onClick={() => setTab(t.id as Tab)} className={`px-4 py-3 text-sm font-medium ${tab === t.id ? 'text-primary-600 border-b-2 border-primary-600 bg-primary-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`}>
+            <button key={t.id} onClick={() => setTab(t.id as Tab)} className={`px-4 py-3 text-sm font-medium ${tab === t.id ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`} style={tab === t.id ? { backgroundColor: '#F3F0FF' } : {}}>
               {t.label}
             </button>
           ))}

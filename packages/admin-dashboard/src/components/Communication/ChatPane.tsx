@@ -96,28 +96,32 @@ const ChatPane: React.FC<ChatPaneProps> = ({ messages, onSend, className = '' })
                 size="sm"
                 onClick={() => setShowTemplates(!showTemplates)}
                 icon={FileText}
-                className={showTemplates ? 'bg-primary-100 text-primary-600' : ''}
+                className={showTemplates ? '' : ''}
+                style={showTemplates ? { backgroundColor: '#F3F0FF', color: '#8552C5' } : {}}
               />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowAI(!showAI)}
                 icon={Bot}
-                className={showAI ? 'bg-primary-100 text-primary-600' : ''}
+                className={showAI ? '' : ''}
+                style={showAI ? { backgroundColor: '#F3F0FF', color: '#8552C5' } : {}}
               />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowFiles(!showFiles)}
                 icon={Paperclip}
-                className={showFiles ? 'bg-primary-100 text-primary-600' : ''}
+                className={showFiles ? '' : ''}
+                style={showFiles ? { backgroundColor: '#F3F0FF', color: '#8552C5' } : {}}
               />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowVoice(!showVoice)}
                 icon={Mic}
-                className={showVoice ? 'bg-primary-100 text-primary-600' : ''}
+                className={showVoice ? '' : ''}
+                style={showVoice ? { backgroundColor: '#F3F0FF', color: '#8552C5' } : {}}
               />
             </div>
           </div>
@@ -126,14 +130,14 @@ const ChatPane: React.FC<ChatPaneProps> = ({ messages, onSend, className = '' })
         <div className="h-96 overflow-y-auto p-4 space-y-3 bg-gray-50">
           {messages.map((m) => (
             <div key={m.id} className={`flex ${m.senderId.startsWith('user-') ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[70%] rounded-2xl px-3 py-2 text-sm ${
-                m.senderId.startsWith('user-') ? 'bg-primary-600 text-white' : 'bg-white border border-gray-200 text-gray-900'
-              }`}>
+                <div className={`max-w-[70%] rounded-2xl px-3 py-2 text-sm ${
+                m.senderId.startsWith('user-') ? 'text-white' : 'bg-white border border-gray-200 text-gray-900'
+              }`} style={m.senderId.startsWith('user-') ? { backgroundColor: '#8552C5' } : {}}>
                 {m.type === 'text' && <p>{m.content}</p>}
                 {m.type === 'image' && (
                   <img src={m.metadata?.imageUrl} alt={m.metadata?.fileName || 'image'} className="rounded-md" />
                 )}
-                <div className={`mt-1 text-[10px] ${m.senderId.startsWith('user-') ? 'text-primary-100' : 'text-gray-500'}`}>
+                <div className={`mt-1 text-[10px] ${m.senderId.startsWith('user-') ? 'text-purple-100' : 'text-gray-500'}`}>
                   {new Date(m.timestamp).toLocaleString()}
                 </div>
               </div>

@@ -142,8 +142,8 @@ const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-white">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-              <span className="text-primary-600 font-bold text-lg">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F3F0FF' }}>
+              <span className="font-bold text-lg" style={{ color: '#8552C5' }}>
                 {job.title.split(' ').map(word => word[0]).join('').toUpperCase()}
               </span>
             </div>
@@ -181,9 +181,10 @@ const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'text-primary-600 border-b-2 border-primary-600 bg-primary-50'
+                  ? 'text-purple-600 border-b-2 border-purple-600'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
+              style={activeTab === tab.id ? { backgroundColor: '#F3F0FF' } : {}}
             >
               <tab.icon className="w-4 h-4" />
               <span>{tab.label}</span>
@@ -254,7 +255,8 @@ const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div
-                        className="bg-primary-600 h-3 rounded-full transition-all duration-300"
+                        className="h-3 rounded-full transition-all duration-300"
+                        style={{ backgroundColor: '#8552C5' }}
                         style={{ width: `${progressPercentage}%` }}
                       />
                     </div>
@@ -388,8 +390,8 @@ const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({
                 <div className="space-y-4">
                   {activities.map((activity) => (
                     <div key={activity.id} className="flex items-start space-x-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                        <span className="text-primary-600 text-sm">📋</span>
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F3F0FF' }}>
+                        <span className="text-sm" style={{ color: '#8552C5' }}>📋</span>
                       </div>
                       <div className="flex-1">
                         <p className="text-sm text-gray-900">{activity.description}</p>

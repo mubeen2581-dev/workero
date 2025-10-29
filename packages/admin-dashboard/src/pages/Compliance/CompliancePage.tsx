@@ -70,7 +70,7 @@ const CompliancePage: React.FC = () => {
             { value: 'job', label: 'Job' },
           ]} />
           <input className="input w-36" value={uploadEntityId} onChange={(e)=>setUploadEntityId(e.target.value)} placeholder="Entity ID" />
-          <label className="inline-flex items-center px-3 py-2 bg-primary-600 text-white rounded-xl cursor-pointer">
+          <label className="inline-flex items-center px-3 py-2 text-white rounded-xl cursor-pointer transition-all duration-200 hover:opacity-90" style={{ backgroundColor: '#8552C5' }}>
             Upload
             <input type="file" onChange={handleUpload} className="hidden" />
           </label>

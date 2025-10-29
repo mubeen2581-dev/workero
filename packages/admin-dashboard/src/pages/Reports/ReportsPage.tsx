@@ -161,7 +161,7 @@ const ReportsPage: React.FC = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2 whitespace-nowrap ${
                       activeTab === tab.id
-                        ? 'border-primary-500 text-primary-600'
+                        ? 'border-purple-500 text-purple-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
@@ -195,7 +195,7 @@ const ReportsPage: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors cursor-pointer">
+            <div className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors cursor-pointer">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="p-2 bg-green-100 rounded-lg">
                   <BarChart3 className="w-5 h-5 text-green-600" />
@@ -213,7 +213,7 @@ const ReportsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors cursor-pointer">
+            <div className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors cursor-pointer">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <TrendingUp className="w-5 h-5 text-blue-600" />
@@ -231,7 +231,7 @@ const ReportsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors cursor-pointer">
+            <div className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors cursor-pointer">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="p-2 bg-purple-100 rounded-lg">
                   <Users className="w-5 h-5 text-purple-600" />
@@ -249,7 +249,7 @@ const ReportsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors cursor-pointer">
+            <div className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors cursor-pointer">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="p-2 bg-yellow-100 rounded-lg">
                   <Activity className="w-5 h-5 text-yellow-600" />
@@ -267,7 +267,7 @@ const ReportsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors cursor-pointer">
+            <div className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors cursor-pointer">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="p-2 bg-red-100 rounded-lg">
                   <Target className="w-5 h-5 text-red-600" />
@@ -285,7 +285,7 @@ const ReportsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors cursor-pointer">
+            <div className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors cursor-pointer">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="p-2 bg-indigo-100 rounded-lg">
                   <PieChart className="w-5 h-5 text-indigo-600" />

@@ -121,8 +121,8 @@ const SchedulingPage: React.FC = () => {
               <p className="text-xs sm:text-sm font-medium text-gray-600">Total Events</p>
               <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
-            <div className="p-2 sm:p-3 bg-primary-100 rounded-xl">
-              <Calendar className="w-4 h-4 sm:w-6 sm:h-6 text-primary-600" />
+            <div className="p-2 sm:p-3 rounded-xl" style={{ backgroundColor: '#F3F0FF' }}>
+              <Calendar className="w-4 h-4 sm:w-6 sm:h-6" style={{ color: '#8552C5' }} />
             </div>
           </div>
         </Card>
@@ -178,9 +178,10 @@ const SchedulingPage: React.FC = () => {
                 onClick={() => setViewMode(option.id as ViewMode)}
                 className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                   viewMode === option.id
-                    ? 'text-primary-600 border-b-2 border-primary-600 bg-primary-50'
+                    ? 'text-purple-600 border-b-2 border-purple-600'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
+                style={viewMode === option.id ? { backgroundColor: '#F3F0FF' } : {}}
               >
                 <option.icon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                 <span className="hidden sm:inline">{option.label}</span>

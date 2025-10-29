@@ -49,9 +49,10 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
             {...provided.droppableProps}
             className={`min-h-96 p-3 sm:p-4 rounded-b-xl border-2 border-t-0 transition-colors duration-200 ${
               snapshot.isDraggingOver
-                ? 'border-primary-300 bg-primary-50'
+                ? 'border-purple-300'
                 : getStatusColor(status)
             }`}
+            style={snapshot.isDraggingOver ? { backgroundColor: '#F3F0FF' } : {}}
           >
             <div className="space-y-3 sm:space-y-4">
               {jobs.map((job, index) => (

@@ -192,7 +192,7 @@ const AIQuoteBuilder: React.FC<AIQuoteBuilderProps> = ({ onAddItems, className =
                 <button
                   key={template.name}
                   onClick={() => setDescription(template.description)}
-                  className="text-left p-3 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-colors"
+                  className="text-left p-3 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors"
                 >
                   <p className="text-sm font-medium text-gray-900">{template.name}</p>
                   <p className="text-xs text-gray-500">{template.description}</p>

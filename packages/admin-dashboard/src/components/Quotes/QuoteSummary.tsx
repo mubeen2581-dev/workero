@@ -37,7 +37,7 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({ items, className = '' }) =>
     >
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <Calculator className="w-5 h-5 mr-2 text-primary-600" />
+          <Calculator className="w-5 h-5 mr-2" style={{ color: '#8552C5' }} />
           Quote Summary
         </h3>
 
@@ -61,7 +61,7 @@ const QuoteSummary: React.FC<QuoteSummaryProps> = ({ items, className = '' }) =>
           {/* Total */}
           <div className="flex items-center justify-between py-3 bg-gray-50 rounded-lg px-4">
             <span className="text-lg font-semibold text-gray-900">Total</span>
-            <span className="text-lg font-bold text-primary-600">
+            <span className="text-lg font-bold" style={{ color: '#8552C5' }}>
               {formatCurrency(total)}
             </span>
           </div>

@@ -75,10 +75,10 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ data, className = '' }) => 
             <Line
               type="monotone"
               dataKey="value"
-              stroke="#0ea5e9"
+              stroke="#8552C5"
               strokeWidth={3}
-              dot={{ fill: '#0ea5e9', strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6, stroke: '#0ea5e9', strokeWidth: 2 }}
+              dot={{ fill: '#8552C5', strokeWidth: 2, r: 4 }}
+              activeDot={{ r: 6, stroke: '#8552C5', strokeWidth: 2 }}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -86,7 +86,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ data, className = '' }) => 
 
       <div className="mt-4 flex items-center justify-between text-sm">
         <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 bg-primary-500 rounded-full"></div>
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#8552C5' }}></div>
           <span className="text-gray-600">Monthly Revenue</span>
         </div>
         <div className="text-right">
