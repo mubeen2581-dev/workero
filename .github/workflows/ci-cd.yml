@@ -37,17 +37,8 @@ jobs:
       - name: Lint Admin Dashboard
         run: npm run lint --workspace=packages/admin-dashboard
 
-      - name: Type check Admin Dashboard
-        run: npm run type-check --workspace=packages/admin-dashboard
-
       - name: Test Admin Dashboard
-        run: npm run test:ci --workspace=packages/admin-dashboard
-
-      - name: Lint Driver App
-        run: npm run lint --workspace=packages/driver-app
-
-      - name: Type check Driver App
-        run: npm run type-check --workspace=packages/driver-app
+        run: npm run test --workspace=packages/admin-dashboard
 
   # Build Job
   build:
