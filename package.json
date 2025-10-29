@@ -24,7 +24,7 @@
     "install:all": "npm install && npm install --workspaces"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/node": "^20.19.24",
     "typescript": "^5.0.0"
   },
   "engines": {
