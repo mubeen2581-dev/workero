@@ -1,0 +1,63 @@
+export const queryKeys = {
+  inventory: {
+    all: ['inventory'] as const,
+    items: () => [...queryKeys.inventory.all, 'items'] as const,
+    itemsList: (filters?: any) => [...queryKeys.inventory.items(), 'list', filters] as const,
+    item: (id: string) => [...queryKeys.inventory.items(), id] as const,
+    movements: (filters?: any) => [...queryKeys.inventory.all, 'movements', filters] as const,
+    stock: (location?: string) => [...queryKeys.inventory.all, 'stock', location] as const,
+    lowStock: () => [...queryKeys.inventory.all, 'low-stock'] as const,
+    transfers: () => [...queryKeys.inventory.all, 'transfers'] as const,
+    warehouses: () => [...queryKeys.inventory.all, 'warehouses'] as const,
+    warehouse: (id: string) => [...queryKeys.inventory.warehouses(), id] as const,
+    warehouseStock: (id: string) => [...queryKeys.inventory.warehouse(id), 'stock'] as const,
+    vanStock: () => [...queryKeys.inventory.all, 'van-stock'] as const,
+    vanStockByTechnician: (technicianId: string) => [...queryKeys.inventory.vanStock(), 'technician', technicianId] as const,
+    suppliers: () => [...queryKeys.inventory.all, 'suppliers'] as const,
+    supplier: (id: string) => [...queryKeys.inventory.suppliers(), id] as const,
+    jobMaterials: (jobId: string) => [...queryKeys.inventory.all, 'job-materials', jobId] as const,
+    // Legacy keys for backward compatibility
+    driverStock: (technicianId: string) => queryKeys.inventory.vanStockByTechnician(technicianId),
+    audit: () => queryKeys.inventory.movements(),
+  },
+  leads: {
+    all: ['leads'] as const,
+    lists: () => [...queryKeys.leads.all, 'list'] as const,
+    list: (filters?: any) => [...queryKeys.leads.lists(), filters] as const,
+    details: () => [...queryKeys.leads.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.leads.details(), id] as const,
+    activities: (id: string) => [...queryKeys.leads.detail(id), 'activities'] as const,
+    workloads: (role?: string) => [...queryKeys.leads.all, 'workloads', role] as const,
+  },
+  clients: {
+    all: ['clients'] as const,
+    lists: () => [...queryKeys.clients.all, 'list'] as const,
+    list: (filters?: any) => [...queryKeys.clients.lists(), filters] as const,
+    details: () => [...queryKeys.clients.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.clients.details(), id] as const,
+  },
+  quotes: {
+    all: ['quotes'] as const,
+    lists: () => [...queryKeys.quotes.all, 'list'] as const,
+    list: (filters?: any) => [...queryKeys.quotes.lists(), filters] as const,
+    details: () => [...queryKeys.quotes.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.quotes.details(), id] as const,
+  },
+  jobs: {
+    all: ['jobs'] as const,
+    lists: () => [...queryKeys.jobs.all, 'list'] as const,
+    list: (filters?: any) => [...queryKeys.jobs.lists(), filters] as const,
+    details: () => [...queryKeys.jobs.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.jobs.details(), id] as const,
+    activities: (id: string) => [...queryKeys.jobs.detail(id), 'activities'] as const,
+  },
+  invoices: {
+    all: ['invoices'] as const,
+    lists: () => [...queryKeys.invoices.all, 'list'] as const,
+    list: (filters?: any) => [...queryKeys.invoices.lists(), filters] as const,
+    details: () => [...queryKeys.invoices.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.invoices.details(), id] as const,
+  },
+};
+
+
