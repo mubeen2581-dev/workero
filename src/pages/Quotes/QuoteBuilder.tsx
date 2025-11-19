@@ -11,7 +11,9 @@ import {
   User,
   Calendar,
   DollarSign,
-  FileText
+  FileText,
+  PenTool,
+  Package
 } from 'lucide-react';
 import { Quote, QuoteItem, Client } from '@/types';
 import Card from '@/components/ui/Card';
@@ -24,8 +26,18 @@ import AIQuoteBuilder from '@/components/Quotes/AIQuoteBuilder';
 import QuoteTemplateSelector from '@/components/Quotes/QuoteTemplateSelector';
 import SaveAsTemplateModal from '@/components/Quotes/SaveAsTemplateModal';
 import QuotePreviewModal from '@/components/Quotes/QuotePreviewModal';
+import QuoteGroups from '@/components/Quotes/QuoteGroups';
+import GoodBetterBestOptions from '@/components/Quotes/GoodBetterBestOptions';
+import MaterialChoices from '@/components/Quotes/MaterialChoices';
+import LivePricing from '@/components/Quotes/LivePricing';
+import PermitPricing from '@/components/Quotes/PermitPricing';
+import PaymentSchedule from '@/components/Quotes/PaymentSchedule';
+import EnhancedAIQuoteBuilder from '@/components/Quotes/EnhancedAIQuoteBuilder';
+import InstantContract from '@/components/Quotes/InstantContract';
+import AdvancedCustomization from '@/components/Quotes/AdvancedCustomization';
 import { useClients } from '@/services/clientQueries';
 import { useCreateQuote, useUpdateQuote, useSendQuote, useQuote } from '@/services/quoteQueries';
+import { QuoteService } from '@/services/quotes';
 import { toast } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 
@@ -39,6 +51,14 @@ const QuoteBuilder: React.FC = () => {
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [isSavingTemplate, setIsSavingTemplate] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [requiresEsignature, setRequiresEsignature] = useState(false);
+  const [packageType, setPackageType] = useState<'basic' | 'standard' | 'premium' | null>(null);
+  const [selectedTier, setSelectedTier] = useState<string | undefined>(undefined);
+  const [showGroups, setShowGroups] = useState(false);
+  const [permits, setPermits] = useState<any[]>([]);
+  const [paymentSchedule, setPaymentSchedule] = useState<any[]>([]);
+  const [liveTotal, setLiveTotal] = useState<number>(0);
+  const [customizationOptions, setCustomizationOptions] = useState<any>(null);
 
   // Fetch clients from API
   const { data: clientsData = [], isLoading: clientsLoading } = useClients();
@@ -64,8 +84,23 @@ const QuoteBuilder: React.FC = () => {
           unitPrice: parseFloat(item.unit_price || item.unitPrice || '0'),
           taxRate: parseFloat(item.tax_rate || item.taxRate || '0'),
           lineTotal: parseFloat(item.line_total || item.lineTotal || '0'),
+          groupName: item.group_name || item.groupName || null,
+          sortOrder: item.sort_order || item.sortOrder || 0,
+          optionType: item.option_type || item.optionType || null,
+          materialChoiceId: item.material_choice_id || item.materialChoiceId || null,
+          materialOptions: item.material_options || item.materialOptions || null,
+          isOptional: item.is_optional || item.isOptional || false,
+          category: item.category || null,
         }));
         setItems(normalizedItems);
+      }
+      
+      // Set e-signature and package type
+      if (existingQuote.requiresEsignature !== undefined) {
+        setRequiresEsignature(existingQuote.requiresEsignature);
+      }
+      if (existingQuote.packageType) {
+        setPackageType(existingQuote.packageType);
       }
       
       // Set notes
@@ -108,6 +143,20 @@ const QuoteBuilder: React.FC = () => {
     ));
   };
 
+  const handleMaterialChange = (itemId: string, materialId: string, newLineTotal: number) => {
+    setItems(items.map(item => 
+      item.id === itemId 
+        ? { ...item, materialChoiceId: materialId, lineTotal: newLineTotal }
+        : item
+    ));
+  };
+
+  const handleTierSelect = (tier: any) => {
+    setSelectedTier(tier.id);
+    // You can add logic here to update items based on tier selection
+    // For example, add tier-specific items or adjust prices
+  };
+
   const handleDeleteItem = (itemId: string) => {
     setItems(items.filter(item => item.id !== itemId));
   };
@@ -135,9 +184,21 @@ const QuoteBuilder: React.FC = () => {
           quantity: item.quantity,
           unit_price: item.unitPrice,
           tax_rate: item.taxRate || 0,
+          group_name: item.groupName || null,
+          sort_order: item.sortOrder || 0,
+          option_type: item.optionType || null,
+          material_choice_id: item.materialChoiceId || null,
+          material_options: item.materialOptions || null,
+          is_optional: item.isOptional || false,
+          category: item.category || null,
         })),
         valid_until: validUntil,
         notes: notes || undefined,
+        requires_esignature: requiresEsignature,
+        package_type: packageType || null,
+        permit_costs: permits,
+        total_permit_cost: permits.reduce((sum, p) => sum + (p.cost || 0), 0),
+        payment_schedule: paymentSchedule,
       };
 
       if (quoteId) {
@@ -175,9 +236,21 @@ const QuoteBuilder: React.FC = () => {
           quantity: item.quantity,
           unit_price: item.unitPrice,
           tax_rate: item.taxRate || 0,
+          group_name: item.groupName || null,
+          sort_order: item.sortOrder || 0,
+          option_type: item.optionType || null,
+          material_choice_id: item.materialChoiceId || null,
+          material_options: item.materialOptions || null,
+          is_optional: item.isOptional || false,
+          category: item.category || null,
         })),
         valid_until: validUntil,
         notes: notes || undefined,
+        requires_esignature: requiresEsignature,
+        package_type: packageType || null,
+        permit_costs: permits,
+        total_permit_cost: permits.reduce((sum, p) => sum + (p.cost || 0), 0),
+        payment_schedule: paymentSchedule,
       };
 
       let quoteIdToSend = quoteId;
@@ -343,7 +416,7 @@ const QuoteBuilder: React.FC = () => {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Main Content */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -397,6 +470,35 @@ const QuoteBuilder: React.FC = () => {
               </div>
             )}
           </Card>
+
+          {/* Good/Better/Best Options */}
+          {items.length > 0 && (
+            <GoodBetterBestOptions
+              onSelectTier={handleTierSelect}
+              selectedTier={selectedTier}
+            />
+          )}
+
+          {/* Quote Groups */}
+          {items.length > 0 && (
+            <Card className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowGroups(!showGroups)}
+                >
+                  {showGroups ? 'Hide' : 'Show'} Groups
+                </Button>
+              </div>
+              {showGroups && (
+                <QuoteGroups
+                  items={items}
+                  onItemsChange={setItems}
+                />
+              )}
+            </Card>
+          )}
 
           {/* Quote Items */}
           <Card className="p-4 sm:p-6">
@@ -455,18 +557,77 @@ const QuoteBuilder: React.FC = () => {
                   </thead>
                   <tbody>
                     {items.map((item) => (
-                      <QuoteItemRow
-                        key={item.id}
-                        item={item}
-                        onUpdate={handleUpdateItem}
-                        onDelete={handleDeleteItem}
-                        isEditable={true}
-                      />
+                      <React.Fragment key={item.id}>
+                        <QuoteItemRow
+                          item={item}
+                          onUpdate={handleUpdateItem}
+                          onDelete={handleDeleteItem}
+                          isEditable={true}
+                        />
+                        {/* Material Choices for items with material options */}
+                        {item.materialOptions && item.materialOptions.length > 0 && (
+                          <tr>
+                            <td colSpan={6} className="px-4 py-3 bg-gray-50">
+                              <MaterialChoices
+                                item={item}
+                                onMaterialChange={handleMaterialChange}
+                              />
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>
               </div>
             )}
+          </Card>
+
+          {/* E-Signature & Package Options */}
+          <Card className="p-4 sm:p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <PenTool className="w-5 h-5 mr-2 text-primary-600" />
+              Signature & Package Options
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <label className="text-sm font-medium text-gray-900">
+                    Require E-Signature
+                  </label>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Client will need to sign this quote electronically
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={requiresEsignature}
+                    onChange={(e) => setRequiresEsignature(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Package Type
+                </label>
+                <Select
+                  options={[
+                    { value: '', label: 'None' },
+                    { value: 'basic', label: 'Basic' },
+                    { value: 'standard', label: 'Standard' },
+                    { value: 'premium', label: 'Premium' },
+                  ]}
+                  value={packageType || ''}
+                  onChange={(value) => setPackageType(value as any || null)}
+                  placeholder="Select package type (optional)"
+                />
+              </div>
+            </div>
           </Card>
 
           {/* Notes */}
@@ -489,14 +650,54 @@ const QuoteBuilder: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="space-y-6"
         >
+          {/* Live Pricing */}
+          <LivePricing items={items} onPriceChange={setLiveTotal} />
+
           {/* Quote Summary */}
           <QuoteSummary items={items} />
+
+          {/* Permit Pricing */}
+          <PermitPricing
+            onPermitsChange={setPermits}
+            existingPermits={permits}
+          />
+
+          {/* Payment Schedule */}
+          <PaymentSchedule
+            totalAmount={liveTotal || (items.reduce((sum, item) => sum + (item.lineTotal || item.quantity * item.unitPrice), 0) + items.reduce((sum, item) => {
+              const lineTotal = item.lineTotal || (item.quantity * item.unitPrice);
+              return sum + (lineTotal * (item.taxRate || 0) / 100);
+            }, 0))}
+            onScheduleChange={setPaymentSchedule}
+            existingSchedule={paymentSchedule}
+          />
 
           {/* Quote Templates */}
           <QuoteTemplateSelector onSelectTemplate={(templateItems) => setItems([...items, ...templateItems])} />
 
-          {/* AI Quote Builder */}
-          <AIQuoteBuilder onAddItems={handleAddAISuggestions} />
+          {/* Enhanced AI Quote Builder */}
+          <EnhancedAIQuoteBuilder onAddItems={handleAddAISuggestions} />
+
+          {/* Instant Contract */}
+          {quoteId && previewQuote && (
+            <InstantContract
+              quote={previewQuote as Quote}
+              onGenerateContract={async () => {
+                if (!quoteId) return;
+                await QuoteService.generateContract(quoteId);
+                toast.success('Contract generated successfully');
+              }}
+              onSignContract={async () => {
+                navigate(`/quotes/${quoteId}/sign`);
+              }}
+            />
+          )}
+
+          {/* Advanced Customization */}
+          <AdvancedCustomization
+            onCustomizationChange={setCustomizationOptions}
+            existingOptions={customizationOptions}
+          />
         </motion.div>
       </div>
 

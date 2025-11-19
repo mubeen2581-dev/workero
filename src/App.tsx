@@ -14,6 +14,7 @@ import LeadsPipeline from '@/pages/Leads/LeadsPipeline';
 import LeadDetail from '@/pages/Leads/LeadDetail';
 import QuotesList from '@/pages/Quotes/QuotesList';
 import QuoteBuilder from '@/pages/Quotes/QuoteBuilder';
+import QuoteSign from '@/pages/Quotes/QuoteSign';
 import JobsList from '@/pages/Jobs/JobsList';
 import JobBuilder from '@/pages/Jobs/JobBuilder';
 import SchedulingPage from '@/pages/Scheduling/SchedulingPage';
@@ -169,6 +170,7 @@ const App: React.FC = () => {
                       <Route path="/quotes" element={<RoleProtectedRoute permission="quotes.view"><QuotesList /></RoleProtectedRoute>} />
                       <Route path="/quotes/new" element={<RoleProtectedRoute permission="quotes.create"><QuoteBuilder /></RoleProtectedRoute>} />
                       <Route path="/quotes/:id/edit" element={<RoleProtectedRoute permission="quotes.update"><QuoteBuilder /></RoleProtectedRoute>} />
+                      <Route path="/quotes/:id/sign" element={<QuoteSign />} />
                       {/* Phase 4 - Job Management */}
                       <Route path="/jobs" element={<RoleProtectedRoute permission="jobs.view"><JobsList /></RoleProtectedRoute>} />
                       <Route path="/jobs/new" element={<RoleProtectedRoute permission="jobs.create"><JobBuilder /></RoleProtectedRoute>} />

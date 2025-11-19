@@ -178,3 +178,44 @@ export function useConvertQuoteToJob() {
   });
 }
 
+/**
+ * Sign a quote with e-signature
+ */
+export function useSignQuote() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, signatureData, signatureType }: { id: string; signatureData: string; signatureType?: string }) =>
+      QuoteService.sign(id, signatureData, signatureType),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.quotes.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.quotes.detail(variables.id) });
+      toast.success('Quote signed successfully');
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || 'Failed to sign quote';
+      toast.error(message);
+    },
+  });
+}
+
+/**
+ * Decline a quote
+ */
+export function useDeclineQuote() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => QuoteService.decline(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.quotes.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.quotes.detail(id) });
+      toast.success('Quote declined successfully');
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || 'Failed to decline quote';
+      toast.error(message);
+    },
+  });
+}
+

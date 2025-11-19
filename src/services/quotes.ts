@@ -57,10 +57,25 @@ export interface CreateQuoteRequest {
     quantity: number;
     unit_price: number;
     tax_rate?: number;
+    group_name?: string | null;
+    sort_order?: number;
+    option_type?: 'good' | 'better' | 'best' | 'optional' | 'required' | null;
+    material_choice_id?: string | null;
+    material_options?: any[];
+    is_optional?: boolean;
+    category?: string | null;
   }>;
   valid_until: string;
   notes?: string;
   profit_margin?: number;
+  requires_esignature?: boolean;
+  package_type?: 'basic' | 'standard' | 'premium' | null;
+  variants?: Record<string, any>;
+  deposit_amount?: number;
+  deposit_percentage?: number;
+  payment_schedule?: Array<any>;
+  permit_costs?: Array<any>;
+  total_permit_cost?: number;
 }
 
 export interface UpdateQuoteRequest {
@@ -164,6 +179,33 @@ export const QuoteService = {
     const response = await quotesClient.get(`/quotes/${id}/pdf`, {
       responseType: 'blob',
     });
+    return response.data;
+  },
+
+  /**
+   * Sign quote with e-signature
+   */
+  async sign(id: string, signatureData: string, signatureType: string = 'electronic'): Promise<{ data: Quote }> {
+    const response = await quotesClient.post(`/quotes/${id}/sign`, {
+      signature_data: signatureData,
+      signature_type: signatureType,
+    });
+    return response.data;
+  },
+
+  /**
+   * Decline quote
+   */
+  async decline(id: string): Promise<{ data: Quote }> {
+    const response = await quotesClient.post(`/quotes/${id}/decline`);
+    return response.data;
+  },
+
+  /**
+   * Generate contract from quote
+   */
+  async generateContract(id: string): Promise<{ data: Quote }> {
+    const response = await quotesClient.post(`/quotes/${id}/generate-contract`);
     return response.data;
   },
 };

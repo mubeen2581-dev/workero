@@ -324,7 +324,7 @@ const JobBuilder: React.FC = () => {
                   <p className="text-sm text-gray-600">{selectedClient.phone}</p>
                   {selectedClient.address && (
                     <p className="text-sm text-gray-600 mt-2">
-                      {selectedClient.address.street}, {selectedClient.address.city}, {selectedClient.address.state} {selectedClient.address.zipCode}
+                      {selectedClient.address.street} {selectedClient.address.city} {selectedClient.address.state} {selectedClient.address.zipCode}
                     </p>
                   )}
                 </div>

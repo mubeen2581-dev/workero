@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -25,6 +25,8 @@ const UserMenu: React.FC = () => {
   // Track avatar URL changes for cache-busting
   const [avatarCacheKey, setAvatarCacheKey] = useState(0);
   const prevAvatarRef = useRef<string | undefined | null>(null);
+  const errorCountRef = useRef<number>(0);
+  const maxErrorRetries = 1; // Only retry once
   
   useEffect(() => {
     // Check if avatar actually changed (not just timestamp)
@@ -34,13 +36,48 @@ const UserMenu: React.FC = () => {
     if (currentAvatar && currentAvatar !== prevAvatar) {
       setAvatarCacheKey(Date.now());
       prevAvatarRef.current = user.avatar || null;
+      errorCountRef.current = 0; // Reset error count when avatar changes
     }
   }, [user?.avatar]);
+  
+  // Generate initials avatar as data URI to avoid external API calls
+  // Memoize to avoid regenerating on every render
+  const initialsAvatar = useMemo(() => {
+    if (!user) return '';
+    
+    const firstName = user.firstName || '';
+    const lastName = user.lastName || '';
+    const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    
+    // Return empty if no initials
+    if (!initials) return '';
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = 100;
+    canvas.height = 100;
+    const ctx = canvas.getContext('2d');
+    
+    if (ctx) {
+      // Background
+      ctx.fillStyle = '#0ea5e9';
+      ctx.fillRect(0, 0, 100, 100);
+      
+      // Text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 40px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(initials, 50, 50);
+    }
+    
+    return canvas.toDataURL();
+  }, [user?.firstName, user?.lastName]);
   
   // Generate avatar URL with cache-busting
   const getAvatarUrl = (avatar: string | undefined | null): string => {
     if (!avatar) {
-      return `https://ui-avatars.com/api/?name=${user?.firstName || ''}+${user?.lastName || ''}&background=0ea5e9&color=fff`;
+      // Use memoized initials avatar instead of external API to avoid CORS/blocking issues
+      return initialsAvatar || '';
     }
     // Remove existing cache-busting params and add new one
     const baseUrl = avatar.split('?')[0];
@@ -48,6 +85,24 @@ const UserMenu: React.FC = () => {
   };
   
   const avatarUrl = user ? getAvatarUrl(user.avatar) : '';
+  
+  // Handle avatar error with fallback - prevent infinite loops
+  const handleAvatarError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.target as HTMLImageElement;
+    
+    // Prevent infinite loop - check if we've already set the fallback
+    if (target.src === initialsAvatar || errorCountRef.current >= maxErrorRetries) {
+      // Already using fallback or max retries reached, stop trying
+      return;
+    }
+    
+    errorCountRef.current += 1;
+    
+    // Use memoized initials avatar as fallback
+    if (initialsAvatar) {
+      target.src = initialsAvatar;
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -87,11 +142,7 @@ const UserMenu: React.FC = () => {
             alt={`${user.firstName} ${user.lastName}`}
             className="w-8 h-8 rounded-full object-cover"
             key={`avatar-${user.id}-${avatarCacheKey}-${user.avatar}`} // Force re-render when avatar changes
-            onError={(e) => {
-              // Fallback to default avatar if image fails to load
-              const target = e.target as HTMLImageElement;
-              target.src = `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=0ea5e9&color=fff`;
-            }}
+            onError={handleAvatarError}
           />
           {unreadCount > 0 && (
             <div className="absolute -top-1 -right-1 w-4 h-4 bg-error-500 text-white text-xs rounded-full flex items-center justify-center">
@@ -126,11 +177,7 @@ const UserMenu: React.FC = () => {
                   alt={`${user.firstName} ${user.lastName}`}
                   className="w-12 h-12 rounded-full object-cover"
                   key={`avatar-${user.id}-${avatarCacheKey}-${user.avatar}`} // Force re-render when avatar changes
-                  onError={(e) => {
-                    // Fallback to default avatar if image fails to load
-                    const target = e.target as HTMLImageElement;
-                    target.src = `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=0ea5e9&color=fff`;
-                  }}
+                  onError={handleAvatarError}
                 />
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900">

@@ -91,6 +91,22 @@ export interface QuoteItem {
   unitPrice: number;
   taxRate: number;
   lineTotal: number;
+  groupName?: string | null;
+  sortOrder?: number;
+  optionType?: 'good' | 'better' | 'best' | 'optional' | 'required' | null;
+  materialChoiceId?: string | null;
+  materialOptions?: MaterialOption[];
+  isOptional?: boolean;
+  category?: string | null;
+}
+
+export interface MaterialOption {
+  id: string;
+  name: string;
+  description: string;
+  image?: string;
+  price: number;
+  priceDifference: number;
 }
 
 export interface Quote {
@@ -107,6 +123,37 @@ export interface Quote {
   notes: string;
   createdAt: string;
   updatedAt: string;
+  options?: Record<string, any>;
+  hasSignature?: boolean;
+  requiresEsignature?: boolean;
+  esignatureSentAt?: string;
+  esignatureSignedAt?: string;
+  esignatureStatus?: 'pending' | 'sent' | 'signed' | 'declined';
+  packageType?: 'basic' | 'standard' | 'premium' | null;
+  variants?: Record<string, any>;
+  depositAmount?: number;
+  depositPercentage?: number;
+  paymentSchedule?: Array<{
+    id: string;
+    name: string;
+    description: string;
+    amount: number;
+    percentage: number;
+    dueDate?: string;
+    type: 'deposit' | 'milestone' | 'final';
+    trigger: 'signature' | 'completion' | 'date';
+  }>;
+  permitCosts?: Array<{
+    id: string;
+    type: string;
+    description: string;
+    cost: number;
+    category: string;
+    required: boolean;
+  }>;
+  totalPermitCost?: number;
+  contractGenerated?: boolean;
+  contractTemplateId?: string | null;
 }
 
 export interface Job {
