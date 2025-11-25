@@ -208,5 +208,54 @@ export const QuoteService = {
     const response = await quotesClient.post(`/quotes/${id}/generate-contract`);
     return response.data;
   },
+
+  /**
+   * Generate AI quote suggestions
+   */
+  async generateAISuggestions(description: string, smartPricing: boolean = true, useGroq: boolean = true, useXEAIService: boolean = false): Promise<{ data: { suggestions: any[], count: number, source: string } }> {
+    const response = await quotesClient.post('/quotes/ai/generate', {
+      description,
+      smart_pricing: smartPricing,
+      use_groq: useGroq,
+      use_xe_ai: useXEAIService,
+    });
+    return response.data;
+  },
+
+  /**
+   * Get historical pricing analysis
+   */
+  async getHistoricalPricing(projectType: string, itemName?: string): Promise<{ data: any }> {
+    const response = await quotesClient.get('/quotes/ai/historical-pricing', {
+      params: {
+        project_type: projectType,
+        item_name: itemName,
+      },
+    });
+    return response.data;
+  },
+
+  /**
+   * Get material recommendations
+   */
+  async getMaterialRecommendations(projectType: string, budgetTier: string = 'standard', materials: string[] = []): Promise<{ data: any }> {
+    const response = await quotesClient.post('/quotes/ai/material-recommendations', {
+      project_type: projectType,
+      budget_tier: budgetTier,
+      materials,
+    });
+    return response.data;
+  },
+
+  /**
+   * Optimize quote pricing
+   */
+  async optimizePricing(items: Array<{ description: string, unit_price: number }>, targetMargin: number = 25): Promise<{ data: any }> {
+    const response = await quotesClient.post('/quotes/ai/optimize-pricing', {
+      items,
+      target_margin: targetMargin,
+    });
+    return response.data;
+  },
 };
 

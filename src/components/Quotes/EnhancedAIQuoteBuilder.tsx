@@ -5,6 +5,7 @@ import { QuoteItem } from '@/types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { toast } from 'react-toastify';
+import { QuoteService } from '@/services/quotes';
 
 interface AIQuoteBuilderProps {
   onAddItems: (items: QuoteItem[]) => void;
@@ -45,14 +46,24 @@ const EnhancedAIQuoteBuilder: React.FC<AIQuoteBuilderProps> = ({ onAddItems, cla
 
     setIsGenerating(true);
     
-    // Simulate AI processing with realistic delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Enhanced AI suggestions with smart pricing
-    const aiSuggestions = generateEnhancedAISuggestions(description, smartPricing);
-    setSuggestions(aiSuggestions);
-    setIsGenerating(false);
-    toast.success(`Generated ${aiSuggestions.length} AI suggestions`);
+    try {
+      // Call real AI backend API (defaults to GROQ)
+      const response = await QuoteService.generateAISuggestions(description, smartPricing, true, false);
+      const aiSuggestions = response.data.suggestions || [];
+      
+      setSuggestions(aiSuggestions);
+      toast.success(`Generated ${aiSuggestions.length} AI suggestions (${response.data.source})`);
+    } catch (error: any) {
+      console.error('AI generation error:', error);
+      toast.error('Failed to generate AI suggestions. Using fallback.');
+      
+      // Fallback to local generation if API fails
+      const aiSuggestions = generateEnhancedAISuggestions(description, smartPricing);
+      setSuggestions(aiSuggestions);
+      toast.info(`Generated ${aiSuggestions.length} fallback suggestions`);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSuggestionToggle = (suggestionId: string) => {
