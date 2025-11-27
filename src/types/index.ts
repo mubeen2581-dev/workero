@@ -195,29 +195,96 @@ export interface ScheduleEvent {
   title: string;
   start: Date;
   end: Date;
-  jobId?: string;
-  technicianId?: string;
+  jobId?: string | null;
+  technicianId?: string | null;
+  recurringScheduleId?: string | null;
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
   type: 'job' | 'break' | 'training' | 'maintenance' | 'meeting';
   priority?: 'low' | 'medium' | 'high' | 'urgent';
-  description?: string;
-  location?: string;
-  color?: string;
-  createdAt: string;
-  updatedAt: string;
+  description?: string | null;
+  location?: string | null;
+  color?: string | null;
+  travelTimeMinutes?: number | null;
+  bufferMinutes?: number | null;
+  flexibilityMinutes?: number | null;
+  metadata?: Record<string, any> | null;
+  job?: any;
+  technician?: any;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
+export interface ScheduleAvailabilitySlot {
+  start: string;
+  end: string;
+  durationMinutes: number;
+  dayOfWeek: number;
+  timezone?: string;
+}
+
+export interface ScheduleConflict {
+  technicianId: string;
+  type: 'overlap' | 'workload';
+  events?: Array<{
+    id: string;
+    title: string;
+    start: string;
+    end: string;
+    job_id?: string | null;
+    status: string;
+  }>;
+  date?: string;
+  scheduledJobs?: number;
+  message?: string;
+}
+
+export interface RecurringSchedule {
+  id: string;
+  companyId: string;
+  jobId?: string | null;
+  technicianId?: string | null;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'custom';
+  interval: number;
+  weekdays?: number[] | null;
+  monthDay?: number | null;
+  startDate: string;
+  endDate?: string | null;
+  timezone?: string | null;
+  status: 'active' | 'paused' | 'completed' | 'cancelled';
+  nextOccurrence?: string | null;
+  constraints?: {
+    title?: string;
+    description?: string;
+    priority?: 'low' | 'medium' | 'high' | 'urgent';
+    location?: string;
+    color?: string;
+    duration_minutes?: number;
+    custom_dates?: string[];
+    [key: string]: any;
+  };
+  job?: Job;
+  technician?: User;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/**
+ * @deprecated Legacy mock data interface
+ */
 export interface Availability {
   id: string;
   technicianId: string;
-  dayOfWeek: number; // 0 = Sunday, 1 = Monday, etc.
-  startTime: string; // HH:MM format
-  endTime: string; // HH:MM format
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
   isAvailable: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
+/**
+ * @deprecated Legacy mock data interface for older UI components.
+ */
 export interface RecurringJob {
   id: string;
   title: string;
@@ -225,9 +292,9 @@ export interface RecurringJob {
   clientId: string;
   client: Client;
   frequency: 'weekly' | 'monthly' | 'quarterly' | 'yearly';
-  dayOfWeek: number; // 0 = Sunday, 1 = Monday, etc.
-  startTime: string; // HH:MM format
-  duration: number; // in hours
+  dayOfWeek: number;
+  startTime: string;
+  duration: number;
   isActive: boolean;
   nextOccurrence: Date;
   createdAt: string;

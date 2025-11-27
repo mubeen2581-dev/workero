@@ -1,4 +1,19 @@
 export const queryKeys = {
+  users: {
+    all: ['users'] as const,
+    lists: () => [...queryKeys.users.all, 'list'] as const,
+    list: (filters?: any) => [...queryKeys.users.lists(), filters] as const,
+    details: () => [...queryKeys.users.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.users.details(), id] as const,
+  },
+  schedule: {
+    all: ['schedule'] as const,
+    events: (filters?: any) => [...queryKeys.schedule.all, 'events', filters] as const,
+    availability: (params?: any) => [...queryKeys.schedule.all, 'availability', params] as const,
+    conflicts: (params?: any) => [...queryKeys.schedule.all, 'conflicts', params] as const,
+    recurring: () => [...queryKeys.schedule.all, 'recurring'] as const,
+    recurringDetail: (id: string) => [...queryKeys.schedule.recurring(), id] as const,
+  },
   inventory: {
     all: ['inventory'] as const,
     items: () => [...queryKeys.inventory.all, 'items'] as const,

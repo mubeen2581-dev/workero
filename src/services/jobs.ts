@@ -74,7 +74,7 @@ export interface UpdateJobRequest {
   priority?: 'low' | 'medium' | 'high' | 'urgent';
   estimated_duration?: number;
   actual_duration?: number;
-  assigned_technician?: string;
+  assigned_technician?: string | null;
   scheduled_date?: string;
   location?: Record<string, any>;
   materials?: Array<Record<string, any>>;

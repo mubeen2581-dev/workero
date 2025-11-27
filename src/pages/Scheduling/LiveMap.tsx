@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 import { motion } from 'framer-motion';
 import { Map, Route, Shield, Car } from 'lucide-react';
 import Card from '@/components/ui/Card';
@@ -7,16 +6,13 @@ import Select from '@/components/ui/Select';
 import RoutePreview from '@/components/Tracking/RoutePreview';
 import GeofenceManager from '@/components/Tracking/GeofenceManager';
 import MileageTracker from '@/components/Tracking/MileageTracker';
+import LeafletMap from '@/components/ui/LeafletMap';
 import { TrackingService } from '@/services/tracking';
 import { TechnicianLocation } from '@/mocks/tracking';
-
-const containerStyle = { width: '100%', height: '70vh' } as const;
 
 type ViewMode = 'live' | 'routes' | 'geofence' | 'mileage';
 
 const LiveMapPage: React.FC = () => {
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
-  const { isLoaded } = useJsApiLoader({ id: 'google-map-script', googleMapsApiKey: apiKey || '' });
   const [locations, setLocations] = useState<TechnicianLocation[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('live');
@@ -36,7 +32,14 @@ const LiveMapPage: React.FC = () => {
   }, []);
 
   const filtered = locations.filter(l => statusFilter === 'all' || l.status === statusFilter);
-  const center = filtered[0] ? { lat: filtered[0].lat, lng: filtered[0].lng } : { lat: 39.8283, lng: -98.5795 };
+  const center: [number, number] = filtered[0] 
+    ? [filtered[0].lat, filtered[0].lng] 
+    : [39.8283, -98.5795];
+  
+  const markers = filtered.map((t) => ({
+    position: [t.lat, t.lng] as [number, number],
+    title: `${t.technician.firstName} ${t.technician.lastName} • ${t.status}`,
+  }));
 
   const viewOptions = [
     { id: 'live', label: 'Live Map', icon: Map },
@@ -113,16 +116,12 @@ const LiveMapPage: React.FC = () => {
               </div>
             </Card>
             <Card className="p-0 overflow-hidden">
-              {!apiKey && (
-                <div className="p-6 text-sm text-red-600">Google Maps API key missing. Add VITE_GOOGLE_MAPS_API_KEY to your .env file.</div>
-              )}
-              {apiKey && isLoaded && (
-                <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={5}>
-                  {filtered.map((t) => (
-                    <Marker key={t.technicianId} position={{ lat: t.lat, lng: t.lng }} title={`${t.technician.firstName} ${t.technician.lastName} • ${t.status}`} />
-                  ))}
-                </GoogleMap>
-              )}
+              <LeafletMap
+                center={center}
+                zoom={5}
+                markers={markers}
+                style={{ height: '70vh', width: '100%' }}
+              />
             </Card>
           </div>
         )}

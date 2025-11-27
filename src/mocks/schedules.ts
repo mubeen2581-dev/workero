@@ -1,4 +1,4 @@
-import { Job, User, ScheduleEvent, Availability, RecurringJob } from '@/types';
+import { Job, User, ScheduleEvent, ScheduleAvailabilitySlot, RecurringSchedule } from '@/types';
 import { mockJobs, mockTechnicians } from './jobs';
 
 export const mockScheduleEvents: ScheduleEvent[] = [

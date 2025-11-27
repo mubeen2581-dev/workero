@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { motion } from 'framer-motion';
 import { Clock, MapPin, User, AlertCircle, CheckCircle, Calendar } from 'lucide-react';
@@ -6,7 +6,7 @@ import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import { useUIStore } from '@/stores/uiStore';
 
-interface Job {
+export interface DispatchJob {
   id: string;
   title: string;
   client: string;
@@ -14,97 +14,48 @@ interface Job {
   priority: 'low' | 'medium' | 'high' | 'urgent';
   location: string;
   skills: string[];
-  status: 'unassigned' | 'assigned' | 'in_progress' | 'completed';
+  status: 'unassigned' | 'assigned';
+  assignedTechnician?: string | null;
 }
 
-interface Technician {
+export interface DispatchTechnician {
   id: string;
   name: string;
-  avatar: string;
+  avatar?: string;
   skills: string[];
   workload: number;
   maxCapacity: number;
-  jobs: Job[];
+  jobs: DispatchJob[];
 }
 
 interface DragDropDispatchProps {
-  unassignedJobs?: Job[];
-  technicians?: Technician[];
+  jobs: DispatchJob[];
+  technicians: DispatchTechnician[];
   onJobAssign?: (jobId: string, technicianId: string) => void;
   onJobUnassign?: (jobId: string) => void;
+  isLoading?: boolean;
   className?: string;
 }
 
 const DragDropDispatch: React.FC<DragDropDispatchProps> = ({
-  unassignedJobs = [],
-  technicians = [],
+  jobs,
+  technicians,
   onJobAssign,
   onJobUnassign,
+  isLoading = false,
   className = '',
 }) => {
   const { addNotification } = useUIStore();
-  const [jobs, setJobs] = useState<Job[]>([
-    {
-      id: 'job-1',
-      title: 'HVAC Maintenance',
-      client: 'ABC Corp',
-      duration: 2,
-      priority: 'high',
-      location: 'Downtown',
-      skills: ['HVAC', 'Electrical'],
-      status: 'unassigned',
-    },
-    {
-      id: 'job-2',
-      title: 'Plumbing Repair',
-      client: 'XYZ Ltd',
-      duration: 1.5,
-      priority: 'urgent',
-      location: 'Midtown',
-      skills: ['Plumbing'],
-      status: 'unassigned',
-    },
-    {
-      id: 'job-3',
-      title: 'Electrical Install',
-      client: 'Tech Solutions',
-      duration: 3,
-      priority: 'medium',
-      location: 'Uptown',
-      skills: ['Electrical'],
-      status: 'unassigned',
-    },
-  ]);
+  const [localJobs, setLocalJobs] = useState<DispatchJob[]>(jobs);
+  const [techs, setTechs] = useState<DispatchTechnician[]>(technicians);
 
-  const [techs, setTechs] = useState<Technician[]>([
-    {
-      id: 'tech-1',
-      name: 'Mike Smith',
-      avatar: 'https://via.placeholder.com/40',
-      skills: ['HVAC', 'Electrical'],
-      workload: 6,
-      maxCapacity: 8,
-      jobs: [],
-    },
-    {
-      id: 'tech-2',
-      name: 'Sarah Johnson',
-      avatar: 'https://via.placeholder.com/40',
-      skills: ['Plumbing', 'General'],
-      workload: 4,
-      maxCapacity: 8,
-      jobs: [],
-    },
-    {
-      id: 'tech-3',
-      name: 'David Wilson',
-      avatar: 'https://via.placeholder.com/40',
-      skills: ['Electrical', 'HVAC'],
-      workload: 7,
-      maxCapacity: 8,
-      jobs: [],
-    },
-  ]);
+  useEffect(() => {
+    setLocalJobs(jobs);
+  }, [jobs]);
+
+  useEffect(() => {
+    setTechs(technicians);
+  }, [technicians]);
 
   const onDragEnd = useCallback((result: DropResult) => {
     const { destination, source, draggableId } = result;
@@ -117,53 +68,44 @@ const DragDropDispatch: React.FC<DragDropDispatchProps> = ({
 
     if (sourceTechId === destTechId) return;
 
-    // Find the job
-    const job = jobs.find(j => j.id === jobId);
+    const job = localJobs.find((j) => j.id === jobId) || techs.flatMap((t) => t.jobs).find((j) => j.id === jobId);
     if (!job) return;
 
-    // Update job assignment
-    setJobs(prevJobs => 
-      prevJobs.map(j => 
-        j.id === jobId 
-          ? { ...j, status: destTechId ? 'assigned' : 'unassigned' }
+    setLocalJobs((prev) =>
+      prev.map((j) =>
+        j.id === jobId
+          ? { ...j, status: destTechId ? 'assigned' : 'unassigned', assignedTechnician: destTechId || undefined }
           : j
       )
     );
 
-    // Update technicians
-    setTechs(prevTechs => {
-      let updatedTechs = [...prevTechs];
+    setTechs((prevTechs) => {
+      let updated = prevTechs.map((tech) => {
+        if (tech.id === sourceTechId) {
+          return {
+            ...tech,
+            jobs: tech.jobs.filter((j) => j.id !== jobId),
+            workload: Math.max(0, tech.workload - job.duration),
+          };
+        }
+        return tech;
+      });
 
-      // Remove from source technician
-      if (sourceTechId) {
-        updatedTechs = updatedTechs.map(tech => 
-          tech.id === sourceTechId
-            ? {
-                ...tech,
-                jobs: tech.jobs.filter(j => j.id !== jobId),
-                workload: tech.workload - job.duration,
-              }
-            : tech
-        );
-      }
-
-      // Add to destination technician
       if (destTechId) {
-        updatedTechs = updatedTechs.map(tech => 
+        updated = updated.map((tech) =>
           tech.id === destTechId
             ? {
                 ...tech,
-                jobs: [...tech.jobs, job],
+                jobs: [...tech.jobs.filter((j) => j.id !== jobId), job],
                 workload: tech.workload + job.duration,
               }
             : tech
         );
       }
 
-      return updatedTechs;
+      return updated;
     });
 
-    // Trigger callbacks
     if (destTechId) {
       onJobAssign?.(jobId, destTechId);
       const techName = (techs.find(t => t.id === destTechId)?.name) || destTechId;
@@ -206,7 +148,7 @@ const DragDropDispatch: React.FC<DragDropDispatchProps> = ({
     return hasSkills && hasCapacity;
   };
 
-  const JobCard = ({ job, index }: { job: Job; index: number }) => (
+  const JobCard = ({ job, index }: { job: DispatchJob; index: number }) => (
     <Draggable draggableId={job.id} index={index}>
       {(provided, snapshot) => (
         <div
@@ -248,14 +190,14 @@ const DragDropDispatch: React.FC<DragDropDispatchProps> = ({
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className={`grid grid-cols-1 lg:grid-cols-4 gap-6 ${className}`}>
+      <div className={`grid grid-cols-1 lg:grid-cols-4 gap-6 relative ${className}`}>
         {/* Unassigned Jobs */}
         <Card className="p-4">
           <div className="flex items-center space-x-2 mb-4">
             <AlertCircle className="w-5 h-5 text-orange-500" />
             <h3 className="font-semibold text-gray-900">Unassigned Jobs</h3>
             <Badge className="bg-orange-100 text-orange-800">
-              {jobs.filter(j => j.status === 'unassigned').length}
+              {localJobs.filter(j => j.status === 'unassigned').length}
             </Badge>
           </div>
           
@@ -268,7 +210,7 @@ const DragDropDispatch: React.FC<DragDropDispatchProps> = ({
                   snapshot.isDraggingOver ? 'bg-orange-50 border-2 border-dashed border-orange-300' : ''
                 }`}
               >
-                {jobs
+                {localJobs
                   .filter(job => job.status === 'unassigned')
                   .map((job, index) => (
                     <JobCard key={job.id} job={job} index={index} />
@@ -284,7 +226,7 @@ const DragDropDispatch: React.FC<DragDropDispatchProps> = ({
           <Card key={tech.id} className="p-4">
             <div className="flex items-center space-x-3 mb-4">
               <img
-                src={tech.avatar}
+                src={tech.avatar || 'https://via.placeholder.com/40'}
                 alt={tech.name}
                 className="w-10 h-10 rounded-full object-cover"
               />
@@ -343,6 +285,12 @@ const DragDropDispatch: React.FC<DragDropDispatchProps> = ({
             </Droppable>
           </Card>
         ))}
+
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center rounded-xl">
+            <span className="text-sm font-medium text-gray-600">Syncing assignments...</span>
+          </div>
+        )}
       </div>
     </DragDropContext>
   );
