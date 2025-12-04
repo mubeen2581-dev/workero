@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, File, X, Download, Eye, Paperclip } from 'lucide-react';
+import { Upload, File, X, Download, Eye, Paperclip, Loader2 } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
+import { MessagesService, FileAttachment as FileAttachmentType } from '@/services/messages';
+import { toast } from 'react-toastify';
 
 interface FileAttachment {
   id: string;
@@ -11,6 +13,9 @@ interface FileAttachment {
   type: string;
   url: string;
   uploadedAt: string;
+  file?: File; // Keep original file for upload
+  uploaded?: boolean; // Track if uploaded to backend
+  uploading?: boolean; // Track upload state
 }
 
 interface FileShareComponentProps {
@@ -31,22 +36,23 @@ const FileShareComponent: React.FC<FileShareComponentProps> = ({
   const [selectedFiles, setSelectedFiles] = useState<FileAttachment[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [message, setMessage] = useState('');
+  const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (files: FileList) => {
+  const handleFileSelect = async (files: FileList) => {
     const validFiles: FileAttachment[] = [];
     
     Array.from(files).forEach((file) => {
       // Check file type
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
       if (!fileExtension || !acceptedTypes.includes(fileExtension)) {
-        alert(`File type .${fileExtension} is not supported`);
+        toast.error(`File type .${fileExtension} is not supported`);
         return;
       }
 
       // Check file size
       if (file.size > maxFileSize * 1024 * 1024) {
-        alert(`File ${file.name} is too large. Maximum size is ${maxFileSize}MB`);
+        toast.error(`File ${file.name} is too large. Maximum size is ${maxFileSize}MB`);
         return;
       }
 
@@ -57,14 +63,62 @@ const FileShareComponent: React.FC<FileShareComponentProps> = ({
         type: file.type || `application/${fileExtension}`,
         url: URL.createObjectURL(file),
         uploadedAt: new Date().toISOString(),
+        file: file,
+        uploaded: false,
+        uploading: false,
       };
 
       validFiles.push(fileAttachment);
     });
 
     if (validFiles.length > 0) {
-      setSelectedFiles([...selectedFiles, ...validFiles]);
+      setSelectedFiles((prev) => [...prev, ...validFiles]);
       onFileSelect(validFiles);
+      
+      // Auto-upload files to backend
+      validFiles.forEach((fileAttachment) => {
+        uploadFile(fileAttachment);
+      });
+    }
+  };
+
+  const uploadFile = async (fileAttachment: FileAttachment) => {
+    if (!fileAttachment.file || fileAttachment.uploaded) return;
+
+    setUploadingFiles((prev) => new Set(prev).add(fileAttachment.id));
+    setSelectedFiles((prev) =>
+      prev.map((f) => (f.id === fileAttachment.id ? { ...f, uploading: true } : f))
+    );
+
+    try {
+      const uploadedFile = await MessagesService.uploadFile(fileAttachment.file);
+      
+      setSelectedFiles((prev) =>
+        prev.map((f) =>
+          f.id === fileAttachment.id
+            ? {
+                ...f,
+                uploaded: true,
+                uploading: false,
+                url: uploadedFile.url,
+                type: uploadedFile.mime_type,
+              }
+            : f
+        )
+      );
+      
+      toast.success(`${fileAttachment.name} uploaded successfully`);
+    } catch (error: any) {
+      toast.error(`Failed to upload ${fileAttachment.name}: ${error.message || 'Unknown error'}`);
+      setSelectedFiles((prev) =>
+        prev.map((f) => (f.id === fileAttachment.id ? { ...f, uploading: false } : f))
+      );
+    } finally {
+      setUploadingFiles((prev) => {
+        const next = new Set(prev);
+        next.delete(fileAttachment.id);
+        return next;
+      });
     }
   };
 
@@ -188,6 +242,12 @@ const FileShareComponent: React.FC<FileShareComponentProps> = ({
                   </div>
                   
                   <div className="flex items-center space-x-2">
+                    {file.uploading && (
+                      <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
+                    )}
+                    {file.uploaded && (
+                      <span className="text-xs text-green-600">✓ Uploaded</span>
+                    )}
                     {file.type.startsWith('image/') && (
                       <Button
                         variant="ghost"
@@ -195,6 +255,7 @@ const FileShareComponent: React.FC<FileShareComponentProps> = ({
                         onClick={() => window.open(file.url, '_blank')}
                         icon={Eye}
                         className="p-1"
+                        disabled={file.uploading}
                       />
                     )}
                     <Button
@@ -208,14 +269,16 @@ const FileShareComponent: React.FC<FileShareComponentProps> = ({
                       }}
                       icon={Download}
                       className="p-1"
+                      disabled={file.uploading}
                     />
                     <Button
                       variant="primary"
                       size="sm"
                       onClick={() => handleSendFile(file)}
                       className="text-xs px-2 py-1"
+                      disabled={file.uploading || !file.uploaded}
                     >
-                      Send
+                      {file.uploading ? 'Uploading...' : 'Send'}
                     </Button>
                     <Button
                       variant="ghost"
@@ -223,6 +286,7 @@ const FileShareComponent: React.FC<FileShareComponentProps> = ({
                       onClick={() => removeFile(file.id)}
                       icon={X}
                       className="p-1 text-red-600 hover:text-red-700"
+                      disabled={file.uploading}
                     />
                   </div>
                 </motion.div>

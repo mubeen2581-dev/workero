@@ -206,24 +206,34 @@ const SchedulingPage: React.FC = () => {
   };
 
   const handleRecurringSubmit = async (values: RecurringScheduleFormValues) => {
-    const payload = {
-      job_id: values.jobId || undefined,
-      technician_id: values.technicianId || undefined,
+    const payload: any = {
+      job_id: values.jobId || null,
+      technician_id: values.technicianId || null,
       frequency: values.frequency,
-      interval: values.interval,
-      weekdays: values.frequency === 'weekly' ? values.weekdays : undefined,
-      month_day: values.frequency === 'monthly' ? values.monthDay : undefined,
+      interval: values.interval || 1,
       start_date: values.startDate.toISOString(),
-      end_date: values.endDate ? values.endDate.toISOString() : undefined,
+      end_date: values.endDate ? values.endDate.toISOString() : null,
       timezone: values.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-      duration_minutes: values.durationMinutes,
-      title: values.title,
-      description: values.description,
-      priority: values.priority,
-      location: values.location,
-      color: values.color,
-      custom_dates: values.frequency === 'custom' ? values.customDates : undefined,
+      duration_minutes: values.durationMinutes || 60,
     };
+
+    // Add frequency-specific fields
+    if (values.frequency === 'weekly' && values.weekdays) {
+      payload.weekdays = values.weekdays;
+    }
+    if (values.frequency === 'monthly' && values.monthDay) {
+      payload.month_day = values.monthDay;
+    }
+    if (values.frequency === 'custom' && values.customDates) {
+      payload.custom_dates = values.customDates;
+    }
+
+    // Add optional constraint fields (these go into constraints JSON)
+    if (values.title) payload.title = values.title;
+    if (values.description) payload.description = values.description;
+    if (values.priority) payload.priority = values.priority;
+    if (values.location) payload.location = values.location;
+    if (values.color) payload.color = values.color;
 
     if (recurringModalMode === 'edit' && selectedRecurring) {
       await updateRecurringMutation.mutateAsync({ id: selectedRecurring.id, data: payload });

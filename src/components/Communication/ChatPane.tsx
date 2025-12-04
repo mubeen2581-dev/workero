@@ -7,6 +7,8 @@ import AIMessageAssistant from './AIMessageAssistant';
 import FileShareComponent from './FileShareComponent';
 import VoiceNoteRecorder from './VoiceNoteRecorder';
 import { Message, ConversationThread } from '@/mocks/messages';
+import { MessagesService } from '@/services/messages';
+import { toast } from 'react-toastify';
 
 interface ChatPaneProps {
   messages: Message[];
@@ -62,16 +64,38 @@ const ChatPane: React.FC<ChatPaneProps> = ({ messages, onSend, className = '', s
   };
 
   const handleFileSelect = (files: any[]) => {
+    // Files are auto-uploaded by FileShareComponent
     console.log('Files selected:', files);
   };
 
-  const handleSendFile = (file: any, message?: string) => {
-    console.log('Sending file:', file, message);
-    if (message) {
-      onSend(message);
+  const handleSendFile = async (file: any, message?: string) => {
+    if (!selectedThread) {
+      toast.error('Please select a conversation first');
+      return;
     }
-    // Mock file message
-    onSend(`📎 Sent file: ${file.name}`);
+
+    try {
+      // If file has been uploaded, send message with attachment reference
+      if (file.uploaded && file.file) {
+        await MessagesService.sendMessage({
+          conversation_id: selectedThread.id,
+          receiver_id: selectedThread.participantId || '',
+          receiver_type: 'App\Models\User', // TODO: Determine from thread
+          content: message || `📎 ${file.name}`,
+          type: file.type?.startsWith('image/') ? 'image' : 'file',
+          attachments: [file.file],
+        });
+        toast.success('File sent successfully');
+      } else {
+        // If not uploaded yet, just send text message
+        if (message) {
+          onSend(message);
+        }
+        onSend(`📎 Sending file: ${file.name}...`);
+      }
+    } catch (error: any) {
+      toast.error(`Failed to send file: ${error.message || 'Unknown error'}`);
+    }
   };
 
   const handleSendVoiceNote = (voiceNote: any) => {
