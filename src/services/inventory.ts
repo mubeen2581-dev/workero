@@ -176,6 +176,62 @@ export interface ReturnFromJobRequest {
   notes?: string;
 }
 
+// ==================== Stock Audits ====================
+
+export interface StockAudit {
+  id: string;
+  company_id: string;
+  item_id: string;
+  warehouse_id?: string;
+  expected_quantity: number;
+  actual_quantity: number;
+  variance: number;
+  reason?: 'damaged' | 'lost' | 'theft' | 'error' | 'other';
+  notes?: string;
+  audited_by: string;
+  audited_at: string;
+  adjusted: boolean;
+  created_at: string;
+  updated_at: string;
+  item?: InventoryItem;
+  warehouse?: Warehouse;
+  auditor?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+  };
+}
+
+export interface CreateStockAuditRequest {
+  item_id: string;
+  warehouse_id?: string;
+  expected_quantity: number;
+  actual_quantity: number;
+  reason?: 'damaged' | 'lost' | 'theft' | 'error' | 'other';
+  notes?: string;
+  adjust_stock?: boolean;
+}
+
+export interface StockAuditFilters {
+  item_id?: string;
+  warehouse_id?: string;
+  start_date?: string;
+  end_date?: string;
+  has_variance?: boolean;
+  sort_field?: string;
+  sort_direction?: 'asc' | 'desc';
+  page?: number;
+  per_page?: number;
+}
+
+export interface StockAuditStats {
+  total_audits: number;
+  audits_with_variance: number;
+  total_variance_quantity: number;
+  total_variance_value: number;
+  accuracy_rate: number;
+}
+
 // ==================== Suppliers ====================
 
 export interface CreateSupplierRequest {
@@ -475,5 +531,46 @@ export const InventoryService = {
    */
   async deleteSupplier(id: string): Promise<void> {
     await inventoryClient.delete(`/suppliers/${id}`);
+  },
+
+  // ========== Stock Audits ==========
+
+  /**
+   * Create a stock audit
+   */
+  async createAudit(data: CreateStockAuditRequest): Promise<{ data: StockAudit }> {
+    const response = await inventoryClient.post('/inventory/audits', data);
+    return response.data;
+  },
+
+  /**
+   * Get stock audits with optional filters
+   */
+  async getAudits(filters?: StockAuditFilters): Promise<{ data: StockAudit[]; pagination?: any }> {
+    const params = new URLSearchParams();
+    if (filters?.item_id) params.append('item_id', filters.item_id);
+    if (filters?.warehouse_id) params.append('warehouse_id', filters.warehouse_id);
+    if (filters?.start_date) params.append('start_date', filters.start_date);
+    if (filters?.end_date) params.append('end_date', filters.end_date);
+    if (filters?.has_variance) params.append('has_variance', 'true');
+    if (filters?.sort_field) params.append('sort_field', filters.sort_field);
+    if (filters?.sort_direction) params.append('sort_direction', filters.sort_direction);
+    if (filters?.page) params.append('page', filters.page.toString());
+    if (filters?.per_page) params.append('per_page', filters.per_page.toString());
+
+    const response = await inventoryClient.get('/inventory/audits', { params });
+    return response.data;
+  },
+
+  /**
+   * Get stock audit statistics
+   */
+  async getAuditStats(filters?: { start_date?: string; end_date?: string }): Promise<{ data: StockAuditStats }> {
+    const params = new URLSearchParams();
+    if (filters?.start_date) params.append('start_date', filters.start_date);
+    if (filters?.end_date) params.append('end_date', filters.end_date);
+
+    const response = await inventoryClient.get('/inventory/audits/stats', { params });
+    return response.data;
   },
 };

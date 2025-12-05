@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Plus,
@@ -12,7 +12,8 @@ import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import Select from '../ui/Select';
-import { SchedulingService } from '@/services/scheduling';
+import { ScheduleService } from '@/services/schedule';
+import { useUpdateScheduleEvent } from '@/services/scheduleQueries';
 import { toast } from 'react-toastify';
 
 interface ScheduleGridProps {
@@ -30,6 +31,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   onAddEvent,
   className = '',
 }) => {
+  const updateEventMutation = useUpdateScheduleEvent();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [localEvents, setLocalEvents] = useState<ScheduleEvent[]>(events);
@@ -42,6 +44,11 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
   const [priorityFilter, setPriorityFilter] = useState<'' | 'low' | 'medium' | 'high' | 'urgent'>('');
   const [teamFilter, setTeamFilter] = useState<string>('');
   const [regionFilter, setRegionFilter] = useState<string>('');
+
+  // Sync local events with prop events
+  useEffect(() => {
+    setLocalEvents(events);
+  }, [events]);
 
   // Get start and end of current week
   const getWeekStart = (date: Date) => {
@@ -182,22 +189,44 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
     event.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDropOnCell = (technicianId: string, date: Date) => {
+  const handleDropOnCell = async (technicianId: string, date: Date) => {
     if (!draggingId) return;
+    const event = localEvents.find(e => e.id === draggingId);
+    if (!event) return;
+
+    const start = new Date(event.start);
+    const end = new Date(event.end);
+    const newStart = new Date(date);
+    newStart.setHours(start.getHours(), start.getMinutes(), 0, 0);
+    const durationMs = end.getTime() - start.getTime();
+    const newEnd = new Date(newStart.getTime() + durationMs);
+
+    // Optimistic update
     setLocalEvents(prev => prev.map(e => {
       if (e.id !== draggingId) return e;
-      const start = new Date(e.start);
-      const end = new Date(e.end);
-      const newStart = new Date(date);
-      newStart.setHours(start.getHours(), start.getMinutes(), 0, 0);
-      const durationMs = end.getTime() - start.getTime();
-      const newEnd = new Date(newStart.getTime() + durationMs);
-      const updated = { ...e, technicianId, start: newStart, end: newEnd } as ScheduleEvent;
-      SchedulingService.updateEvent(e.id, updated);
-      return updated;
+      return { ...e, technicianId, start: newStart, end: newEnd } as ScheduleEvent;
     }));
-    setDraggingId(null);
-    toast.success('Event reassigned');
+
+    try {
+      await updateEventMutation.mutateAsync({
+        id: draggingId,
+        data: {
+          technician_id: technicianId,
+          start: newStart.toISOString(),
+          end: newEnd.toISOString(),
+        },
+      });
+      // Toast is handled by the mutation
+    } catch (error: any) {
+      // Revert on error
+      setLocalEvents(prev => prev.map(e => {
+        if (e.id !== draggingId) return event;
+        return e;
+      }));
+      toast.error(error?.response?.data?.message || 'Failed to reassign event');
+    } finally {
+      setDraggingId(null);
+    }
   };
 
   // Resize handlers (simple vertical drag: 10px = 30 minutes)
@@ -220,14 +249,41 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({
     );
   };
 
-  const onResizeMouseUp = () => {
+  const onResizeMouseUp = async () => {
     if (!resizing) return;
     const ev = localEvents.find((x) => x.id === resizing.id);
-    if (ev) SchedulingService.updateEvent(ev.id, ev);
-    setResizing(null);
-    window.removeEventListener('mousemove', onResizeMouseMove);
-    window.removeEventListener('mouseup', onResizeMouseUp);
-    toast.success('Event duration updated');
+    if (!ev) {
+      setResizing(null);
+      window.removeEventListener('mousemove', onResizeMouseMove);
+      window.removeEventListener('mouseup', onResizeMouseUp);
+      return;
+    }
+
+    const originalEvent = events.find((x) => x.id === resizing.id);
+    
+    try {
+      await updateEventMutation.mutateAsync({
+        id: ev.id,
+        data: {
+          start: ev.start instanceof Date ? ev.start.toISOString() : ev.start,
+          end: ev.end instanceof Date ? ev.end.toISOString() : ev.end,
+        },
+      });
+      // Toast is handled by the mutation
+    } catch (error: any) {
+      // Revert on error
+      if (originalEvent) {
+        setLocalEvents(prev => prev.map(e => {
+          if (e.id === resizing.id) return originalEvent;
+          return e;
+        }));
+      }
+      toast.error(error?.response?.data?.message || 'Failed to update event duration');
+    } finally {
+      setResizing(null);
+      window.removeEventListener('mousemove', onResizeMouseMove);
+      window.removeEventListener('mouseup', onResizeMouseUp);
+    }
   };
 
   const startResize = (edge: 'start' | 'end', ev: ScheduleEvent, originY: number) => {
