@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Lightbulb, Plus, Check, Zap, TrendingUp, Brain } from 'lucide-react';
+import { Sparkles, Lightbulb, Plus, Check, Zap, TrendingUp, Brain, MessageSquare } from 'lucide-react';
 import { QuoteItem } from '@/types';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { toast } from 'react-toastify';
 import { QuoteService } from '@/services/quotes';
+import AIQuoteChat from './AIQuoteChat';
 
 interface AIQuoteBuilderProps {
   onAddItems: (items: QuoteItem[]) => void;
@@ -37,6 +38,7 @@ const EnhancedAIQuoteBuilder: React.FC<AIQuoteBuilderProps> = ({ onAddItems, cla
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedSuggestions, setSelectedSuggestions] = useState<Set<string>>(new Set());
   const [smartPricing, setSmartPricing] = useState(true);
+  const [showChat, setShowChat] = useState(false);
 
   const handleGenerateSuggestions = async () => {
     if (!description.trim()) {
@@ -115,6 +117,23 @@ const EnhancedAIQuoteBuilder: React.FC<AIQuoteBuilderProps> = ({ onAddItems, cla
     }).format(amount);
   };
 
+  // Show chat interface if enabled
+  if (showChat) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+        className={className}
+      >
+        <AIQuoteChat
+          onAddItems={onAddItems}
+          onClose={() => setShowChat(false)}
+        />
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -134,15 +153,26 @@ const EnhancedAIQuoteBuilder: React.FC<AIQuoteBuilderProps> = ({ onAddItems, cla
               <p className="text-xs text-gray-600">Smart suggestions with live pricing</p>
             </div>
           </div>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={smartPricing}
-              onChange={(e) => setSmartPricing(e.target.checked)}
-              className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-            />
-            <span className="text-xs text-gray-700">Smart Pricing</span>
-          </label>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowChat(!showChat)}
+              icon={MessageSquare}
+              className="text-xs"
+            >
+              {showChat ? 'Hide Chat' : 'Chat Mode'}
+            </Button>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={smartPricing}
+                onChange={(e) => setSmartPricing(e.target.checked)}
+                className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+              />
+              <span className="text-xs text-gray-700">Smart Pricing</span>
+            </label>
+          </div>
         </div>
 
         <div className="space-y-4">

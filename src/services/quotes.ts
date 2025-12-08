@@ -257,5 +257,18 @@ export const QuoteService = {
     });
     return response.data;
   },
+
+  /**
+   * AI Chat interface for quote creation
+   */
+  async chatQuote(message: string, conversationHistory: Array<{ role: string, content: string }> = [], useGroq: boolean = true, useXEAIService: boolean = false): Promise<{ data: { response: string, suggestions: any[], source: string, needs_clarification: boolean } }> {
+    const response = await quotesClient.post('/quotes/ai/chat', {
+      message,
+      conversation_history: conversationHistory,
+      use_groq: useGroq,
+      use_xe_ai: useXEAIService,
+    });
+    return response.data;
+  },
 };
 
