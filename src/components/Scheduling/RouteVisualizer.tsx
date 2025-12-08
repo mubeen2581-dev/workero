@@ -1,24 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Navigation, Clock, Route as RouteIcon, Loader2 } from 'lucide-react';
+import { MapPin, Navigation, Clock, Route as RouteIcon, Loader2, Calendar, User } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Badge from '../ui/Badge';
 import LeafletMap from '../ui/LeafletMap';
 import { ScheduleService } from '@/services/schedule';
+import { useScheduleEvents } from '@/services/scheduleQueries';
 import { geocodeAddress } from '@/utils/geocoding';
 import { toast } from 'react-toastify';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 
 interface RouteVisualizerProps {
   locations?: string[];
   onRouteOptimized?: (optimizedRoute: any) => void;
+  useScheduleEvents?: boolean;
+  technicianId?: string;
   className?: string;
 }
 
 const RouteVisualizer: React.FC<RouteVisualizerProps> = ({
   locations: initialLocations = [],
   onRouteOptimized,
+  useScheduleEvents: useEvents = false,
+  technicianId,
   className = '',
 }) => {
   const [locations, setLocations] = useState<string[]>(initialLocations);
@@ -28,6 +34,41 @@ const RouteVisualizer: React.FC<RouteVisualizerProps> = ({
   const [routePolyline, setRoutePolyline] = useState<Array<[number, number]>>([]);
   const [routeMarkers, setRouteMarkers] = useState<Array<{ position: [number, number]; title: string }>>([]);
   const [mapCenter, setMapCenter] = useState<[number, number]>([37.7749, -122.4194]);
+  const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('week');
+
+  const timeRangeDates = useMemo(() => {
+    const now = new Date();
+    switch (timeRange) {
+      case 'today':
+        return { start: new Date(now.setHours(0, 0, 0, 0)), end: new Date(now.setHours(23, 59, 59, 999)) };
+      case 'week':
+        return { start: startOfWeek(now), end: endOfWeek(now) };
+      case 'month':
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+      default:
+        return { start: startOfWeek(now), end: endOfWeek(now) };
+    }
+  }, [timeRange]);
+
+  const eventsQuery = useScheduleEvents({
+    start: timeRangeDates.start.toISOString(),
+    end: timeRangeDates.end.toISOString(),
+    technician_id: technicianId,
+  });
+  const events = eventsQuery.data ?? [];
+
+  // Extract locations from schedule events
+  useEffect(() => {
+    if (useEvents && events.length > 0) {
+      const eventLocations = events
+        .filter((e) => e.location)
+        .map((e) => e.location!)
+        .filter((loc, index, self) => self.indexOf(loc) === index); // Remove duplicates
+      if (eventLocations.length > 0) {
+        setLocations(eventLocations);
+      }
+    }
+  }, [useEvents, events]);
 
   const handleAddLocation = () => {
     const input = document.getElementById('location-input') as HTMLInputElement;
@@ -105,6 +146,42 @@ const RouteVisualizer: React.FC<RouteVisualizerProps> = ({
         </div>
         <RouteIcon className="w-6 h-6 text-primary-600" />
       </div>
+
+      {useEvents && (
+        <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <Calendar className="w-4 h-4 text-blue-600" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-blue-900">
+              Using {events.length} scheduled event{events.length !== 1 ? 's' : ''} from calendar
+            </p>
+            <div className="flex items-center space-x-2 mt-1">
+              <select
+                value={timeRange}
+                onChange={(e) => setTimeRange(e.target.value as any)}
+                className="text-xs px-2 py-1 border border-blue-300 rounded focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+              </select>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const eventLocations = events
+                    .filter((e) => e.location)
+                    .map((e) => e.location!)
+                    .filter((loc, index, self) => self.indexOf(loc) === index);
+                  setLocations(eventLocations);
+                }}
+                className="text-xs"
+              >
+                Refresh
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-4">
         <div>

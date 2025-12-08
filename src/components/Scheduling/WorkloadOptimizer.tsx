@@ -1,10 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, Users, Clock, AlertTriangle, CheckCircle, RotateCcw, Zap } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, Clock, AlertTriangle, CheckCircle, RotateCcw, Zap, Loader2 } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
+import { ScheduleService } from '@/services/schedule';
+import { useTechnicians } from '@/services/userQueries';
+import { useScheduleEvents } from '@/services/scheduleQueries';
+import { toast } from 'react-toastify';
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns';
 
 interface WorkloadData {
   technicianId: string;
@@ -35,53 +40,134 @@ interface WorkloadOptimizerProps {
 const WorkloadOptimizer: React.FC<WorkloadOptimizerProps> = ({ className = '' }) => {
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('week');
   const [autoOptimize, setAutoOptimize] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [workloadData, setWorkloadData] = useState<WorkloadData[]>([]);
 
-  const workloadData: WorkloadData[] = useMemo(() => [
-    {
-      technicianId: 'tech-1',
-      name: 'Mike Smith',
-      currentHours: 7.5,
-      maxCapacity: 8,
-      efficiency: 92,
-      jobsCount: 4,
-      skills: ['HVAC', 'Electrical'],
-      location: 'North',
-      utilization: 94,
-    },
-    {
-      technicianId: 'tech-2',
-      name: 'Sarah Johnson',
-      currentHours: 5.5,
-      maxCapacity: 8,
-      efficiency: 88,
-      jobsCount: 3,
-      skills: ['Plumbing', 'General'],
-      location: 'South',
-      utilization: 69,
-    },
-    {
-      technicianId: 'tech-3',
-      name: 'David Wilson',
-      currentHours: 8.5,
-      maxCapacity: 8,
-      efficiency: 85,
-      jobsCount: 5,
-      skills: ['Electrical', 'HVAC'],
-      location: 'East',
-      utilization: 106,
-    },
-    {
-      technicianId: 'tech-4',
-      name: 'Lisa Brown',
-      currentHours: 6,
-      maxCapacity: 8,
-      efficiency: 90,
-      jobsCount: 3,
-      skills: ['General', 'Plumbing'],
-      location: 'West',
-      utilization: 75,
-    },
-  ], []);
+  const techniciansQuery = useTechnicians();
+  const technicians = techniciansQuery.data ?? [];
+
+  const timeRangeDates = useMemo(() => {
+    const now = new Date();
+    switch (timeRange) {
+      case 'today':
+        return { start: startOfDay(now), end: endOfDay(now) };
+      case 'week':
+        return { start: startOfWeek(now), end: endOfWeek(now) };
+      case 'month':
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+      default:
+        return { start: startOfWeek(now), end: endOfWeek(now) };
+    }
+  }, [timeRange]);
+
+  const eventsQuery = useScheduleEvents({
+    start: timeRangeDates.start.toISOString(),
+    end: timeRangeDates.end.toISOString(),
+  });
+  const events = eventsQuery.data ?? [];
+
+  useEffect(() => {
+    const loadWorkloadData = async () => {
+      if (technicians.length === 0) return;
+
+      setIsLoading(true);
+      try {
+        const technicianIds = technicians.map((t) => t.id);
+        const result = await ScheduleService.getWorkloadBalance({
+          technician_ids: technicianIds,
+          start: timeRangeDates.start.toISOString(),
+          end: timeRangeDates.end.toISOString(),
+        });
+
+        // Map backend response to WorkloadData format
+        const mappedData: WorkloadData[] = (result.technicians || []).map((tech: any) => {
+          const technician = technicians.find((t) => t.id === tech.technician_id || t.id === tech.id);
+          const techEvents = events.filter(
+            (e) => e.technicianId === tech.technician_id || e.technicianId === tech.id
+          );
+
+          const currentHours = tech.current_hours ?? tech.currentHours ?? 0;
+          const maxCapacity = tech.max_capacity ?? tech.maxCapacity ?? 8;
+          const utilization = maxCapacity > 0 ? (currentHours / maxCapacity) * 100 : 0;
+
+          return {
+            technicianId: tech.technician_id ?? tech.id,
+            name: technician
+              ? `${technician.firstName} ${technician.lastName}`.trim() || technician.email
+              : 'Unknown',
+            currentHours,
+            maxCapacity,
+            efficiency: tech.efficiency ?? 85,
+            jobsCount: techEvents.length,
+            skills: technician?.skills || [],
+            location: technician?.region || 'N/A',
+            utilization: Math.round(utilization),
+          };
+        });
+
+        // If no data from API, calculate from events
+        if (mappedData.length === 0 && technicians.length > 0) {
+          const calculatedData: WorkloadData[] = technicians.map((tech) => {
+            const techEvents = events.filter((e) => e.technicianId === tech.id);
+            const totalMinutes = techEvents.reduce((sum, event) => {
+              const duration = (event.end.getTime() - event.start.getTime()) / (1000 * 60);
+              return sum + duration;
+            }, 0);
+            const currentHours = totalMinutes / 60;
+            const maxCapacity = 8;
+            const utilization = maxCapacity > 0 ? (currentHours / maxCapacity) * 100 : 0;
+
+            return {
+              technicianId: tech.id,
+              name: `${tech.firstName} ${tech.lastName}`.trim() || tech.email,
+              currentHours: Math.round(currentHours * 10) / 10,
+              maxCapacity,
+              efficiency: 85,
+              jobsCount: techEvents.length,
+              skills: tech.skills || [],
+              location: tech.region || 'N/A',
+              utilization: Math.round(utilization),
+            };
+          });
+          setWorkloadData(calculatedData);
+        } else {
+          setWorkloadData(mappedData);
+        }
+      } catch (error: any) {
+        console.error('Failed to load workload data:', error);
+        // Fallback to calculating from events
+        if (technicians.length > 0 && events.length > 0) {
+          const calculatedData: WorkloadData[] = technicians.map((tech) => {
+            const techEvents = events.filter((e) => e.technicianId === tech.id);
+            const totalMinutes = techEvents.reduce((sum, event) => {
+              const duration = (event.end.getTime() - event.start.getTime()) / (1000 * 60);
+              return sum + duration;
+            }, 0);
+            const currentHours = totalMinutes / 60;
+            const maxCapacity = 8;
+            const utilization = maxCapacity > 0 ? (currentHours / maxCapacity) * 100 : 0;
+
+            return {
+              technicianId: tech.id,
+              name: `${tech.firstName} ${tech.lastName}`.trim() || tech.email,
+              currentHours: Math.round(currentHours * 10) / 10,
+              maxCapacity,
+              efficiency: 85,
+              jobsCount: techEvents.length,
+              skills: tech.skills || [],
+              location: tech.region || 'N/A',
+              utilization: Math.round(utilization),
+            };
+          });
+          setWorkloadData(calculatedData);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadWorkloadData();
+  }, [timeRange, technicians, events, timeRangeDates]);
 
   const optimizationSuggestions: OptimizationSuggestion[] = useMemo(() => [
     {
@@ -155,6 +241,18 @@ const WorkloadOptimizer: React.FC<WorkloadOptimizerProps> = ({ className = '' })
   const avgEfficiency = workloadData.reduce((sum, tech) => sum + tech.efficiency, 0) / workloadData.length;
   const overloadedTechs = workloadData.filter(tech => tech.utilization > 100).length;
 
+  if (isLoading && workloadData.length === 0) {
+    return (
+      <div className={`space-y-6 ${className}`}>
+        <Card className="p-8">
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-primary-600" />
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
@@ -177,6 +275,7 @@ const WorkloadOptimizer: React.FC<WorkloadOptimizerProps> = ({ className = '' })
             variant={autoOptimize ? 'primary' : 'secondary'}
             onClick={() => setAutoOptimize(!autoOptimize)}
             icon={RotateCcw}
+            disabled={isLoading}
           >
             Auto-Optimize
           </Button>
@@ -288,20 +387,25 @@ const WorkloadOptimizer: React.FC<WorkloadOptimizerProps> = ({ className = '' })
       {/* Technician Details */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Technician Workload Details</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Technician</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Hours</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Utilization</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Efficiency</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Jobs</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700">Location</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workloadData.map((tech) => (
+        {workloadData.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No workload data available for the selected time range.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Technician</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Hours</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Utilization</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Efficiency</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Jobs</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Location</th>
+                </tr>
+              </thead>
+              <tbody>
+                {workloadData.map((tech) => (
                 <tr key={tech.technicianId} className="border-b border-gray-100">
                   <td className="py-3 px-4">
                     <div>
@@ -345,10 +449,11 @@ const WorkloadOptimizer: React.FC<WorkloadOptimizerProps> = ({ className = '' })
                     <span className="text-sm text-gray-700">{tech.location}</span>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Card>
 
       {/* Optimization Suggestions */}

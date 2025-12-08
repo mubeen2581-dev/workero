@@ -281,6 +281,15 @@ export const ScheduleService = {
       nextOccurrence: response.data?.data?.next_occurrence ?? null,
     };
   },
+
+  async getWorkloadBalance(params: {
+    technician_ids?: string[];
+    start: string;
+    end: string;
+  }): Promise<any> {
+    const response = await scheduleClient.post('/schedule/workload-balance', params);
+    return response.data?.data;
+  },
 };
 
 

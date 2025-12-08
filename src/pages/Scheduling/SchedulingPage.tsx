@@ -30,6 +30,7 @@ import WorkloadOptimizer from '@/components/Scheduling/WorkloadOptimizer';
 import TravelTimeEstimator from '@/components/Scheduling/TravelTimeEstimator';
 import CalendarSyncStatus from '@/components/Scheduling/CalendarSyncStatus';
 import RouteVisualizer from '@/components/Scheduling/RouteVisualizer';
+import ScheduleConflictAlerts from '@/components/Scheduling/ScheduleConflictAlerts';
 import { CalendarSyncService } from '@/services/calendarSync';
 import { toast } from 'react-toastify';
 import {
@@ -493,6 +494,22 @@ const SchedulingPage: React.FC = () => {
         </motion.div>
       </div>
 
+      {/* Schedule Conflict Alerts */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.25 }}
+      >
+        <ScheduleConflictAlerts
+          timeRange="week"
+          onResolveConflict={(conflict) => {
+            // Navigate to scheduling view or show conflict resolution modal
+            setViewMode('calendar');
+            toast.info(`Resolving conflict for ${conflict.technicianId}`);
+          }}
+        />
+      </motion.div>
+
       {/* View Tabs */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -631,7 +648,10 @@ const SchedulingPage: React.FC = () => {
         )}
 
         {viewMode === 'route' && (
-          <RouteVisualizer />
+          <RouteVisualizer
+            useScheduleEvents={true}
+            technicianId={selectedTechnician || undefined}
+          />
         )}
       </motion.div>
 
