@@ -1,22 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare, Users, Clock, CheckCircle2, Search, Filter, MoreVertical } from 'lucide-react';
+import { MessageSquare, Users, Clock, CheckCircle2, Search, Filter, MoreVertical, Bell } from 'lucide-react';
 import ThreadList from '@/components/Communication/ThreadList';
 import ChatPane from '@/components/Communication/ChatPane';
-import { Message, ConversationThread } from '@/mocks/messages';
-import { WhatsHubService } from '@/services/whatsHub';
+import NotificationCenter from '@/components/Communication/NotificationCenter';
+import MessageSearch from '@/components/Communication/MessageSearch';
+import { MessagesService, Message, Conversation } from '@/services/messages';
+import { NotificationService } from '@/services/notifications';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { toast } from 'react-toastify';
 
 const ConversationsPage: React.FC = () => {
-  const [threads, setThreads] = useState<ConversationThread[]>([]);
+  const [threads, setThreads] = useState<Conversation[]>([]);
   const [selectedId, setSelectedId] = useState<string | undefined>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
   useEffect(() => {
-    WhatsHubService.listThreads().then(setThreads);
+    loadThreads();
+    loadUnreadCount();
+    
+    // Poll for unread count and refresh threads every 30 seconds
+    const interval = setInterval(() => {
+      loadUnreadCount();
+      loadThreads(); // Refresh threads to get updated unread counts
+    }, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -25,17 +38,66 @@ const ConversationsPage: React.FC = () => {
 
   useEffect(() => {
     if (selectedId) {
-      WhatsHubService.listMessages(selectedId).then(setMessages);
+      loadMessages(selectedId);
+      
+      // Poll for new messages every 3 seconds when a conversation is selected
+      const messageInterval = setInterval(() => {
+        loadMessages(selectedId);
+        loadThreads(); // Also refresh thread list to update unread counts
+      }, 3000);
+      
+      return () => clearInterval(messageInterval);
     }
   }, [selectedId]);
 
+  const loadThreads = async () => {
+    try {
+      const data = await MessagesService.getThreads();
+      setThreads(data);
+    } catch (error: any) {
+      toast.error('Failed to load conversations');
+    }
+  };
+
+  const loadMessages = async (conversationId: string) => {
+    try {
+      const data = await MessagesService.getThreadMessages(conversationId);
+      setMessages(data);
+    } catch (error: any) {
+      toast.error('Failed to load messages');
+    }
+  };
+
+  const loadUnreadCount = async () => {
+    try {
+      const response = await NotificationService.getUnreadCount();
+      setUnreadNotificationCount(response.data.count);
+    } catch (error) {
+      // Silently fail
+    }
+  };
+
   const handleSend = async (text: string) => {
     if (!selectedId) return;
-    const msg = await WhatsHubService.sendMessage({ conversationId: selectedId, type: 'text', body: text });
-    setMessages((prev) => [...prev, msg]);
-    // refresh threads to update last message
-    const t = await WhatsHubService.listThreads();
-    setThreads(t);
+    
+    const selectedThread = threads.find(t => t.id === selectedId);
+    if (!selectedThread) return;
+
+    try {
+      await MessagesService.sendMessage({
+        conversation_id: selectedId,
+        receiver_id: selectedThread.participant_id,
+        receiver_type: selectedThread.participant_type as 'App\Models\User' | 'App\Models\Client',
+        content: text,
+        type: 'text',
+      });
+      
+      // Reload messages and threads
+      await loadMessages(selectedId);
+      await loadThreads();
+    } catch (error: any) {
+      toast.error('Failed to send message: ' + (error.message || 'Unknown error'));
+    }
   };
 
   // Calculate stats
@@ -45,10 +107,14 @@ const ConversationsPage: React.FC = () => {
   const selectedThread = threads.find(t => t.id === selectedId);
 
   // Filter threads based on search
-  const filteredThreads = threads.filter(thread => 
-    thread.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    thread.lastMessage?.content?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredThreads = threads.filter(thread => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      thread.title?.toLowerCase().includes(searchLower) ||
+      (thread.participant as any)?.name?.toLowerCase().includes(searchLower) ||
+      (thread.participant as any)?.email?.toLowerCase().includes(searchLower)
+    );
+  });
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -61,28 +127,41 @@ const ConversationsPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <MessageSquare className="w-6 h-6 text-white" />
               </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-500 rounded-full border-2 border-white flex items-center justify-center">
                 <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">WhatsApp CRM</h1>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-50 rounded-full">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
-                  <span className="text-xs font-medium text-green-600">Connected</span>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Communication Hub</h1>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 rounded-full">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-purple-600" />
+                  <span className="text-xs font-medium text-purple-600">Active</span>
                 </div>
               </div>
               <p className="text-sm sm:text-base text-gray-600 mt-1">
-                Manage customer conversations via WhatsApp Business API
+                Internal messaging and team communication
               </p>
             </div>
           </div>
           
           <div className="flex items-center space-x-2 sm:space-x-3">
+            <MessageSearch conversationId={selectedId} />
+            <Button
+              variant="ghost"
+              onClick={() => setShowNotifications(true)}
+              className="relative"
+            >
+              <Bell className="w-5 h-5" />
+              {unreadNotificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                </span>
+              )}
+            </Button>
             <Button variant="secondary" icon={Filter} className="hidden sm:flex">
               Filter
             </Button>
@@ -213,6 +292,15 @@ const ConversationsPage: React.FC = () => {
           )}
         </div>
       </motion.div>
+
+      {/* Notification Center */}
+      <NotificationCenter
+        isOpen={showNotifications}
+        onClose={() => {
+          setShowNotifications(false);
+          loadUnreadCount(); // Refresh count when closing
+        }}
+      />
     </div>
   );
 };

@@ -61,6 +61,20 @@ export interface Message {
   read_at?: string;
   created_at: string;
   updated_at: string;
+  sender?: {
+    id: string;
+    name?: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+  };
+  receiver?: {
+    id: string;
+    name?: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+  };
 }
 
 export interface Conversation {
@@ -70,7 +84,18 @@ export interface Conversation {
   type: string;
   participant_id: string;
   participant_type: string;
+  participant?: {
+    id: string;
+    name: string;
+    email?: string;
+  };
   last_message_at?: string;
+  last_message?: {
+    id: string;
+    content: string;
+    type: string;
+    timestamp: string;
+  };
   unread_count: number;
   created_at: string;
   updated_at: string;
@@ -185,6 +210,45 @@ export const MessagesService = {
     }
 
     return [];
+  },
+
+  /**
+   * Search messages
+   */
+  async searchMessages(filters: {
+    query: string;
+    conversation_id?: string;
+    type?: 'text' | 'image' | 'file' | 'voice' | 'template';
+    date_from?: string;
+    date_to?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ data: Message[]; meta?: any }> {
+    const response = await messagesClient.get<{ success: boolean; data: Message[]; meta?: any }>(
+      '/messages/search',
+      { params: filters }
+    );
+
+    if (response.data.success && response.data.data) {
+      return { data: response.data.data, meta: response.data.meta };
+    }
+
+    return { data: [] };
+  },
+
+  /**
+   * Mark message as read
+   */
+  async markAsRead(messageId: string): Promise<Message> {
+    const response = await messagesClient.put<{ success: boolean; data: Message }>(
+      `/messages/${messageId}/read`
+    );
+
+    if (response.data.success && response.data.data) {
+      return response.data.data;
+    }
+
+    throw new Error('Failed to mark message as read');
   },
 };
 

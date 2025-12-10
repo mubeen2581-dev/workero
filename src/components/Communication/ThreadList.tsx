@@ -1,9 +1,9 @@
 import React from 'react';
 import { Clock, CheckCircle2 } from 'lucide-react';
-import { ConversationThread } from '@/mocks/messages';
+import { Conversation } from '@/services/messages';
 
 interface ThreadListProps {
-  threads: ConversationThread[];
+  threads: Conversation[];
   selectedId?: string;
   onSelect: (id: string) => void;
   className?: string;
@@ -71,14 +71,14 @@ const ThreadList: React.FC<ThreadListProps> = ({ threads, selectedId, onSelect, 
                       {t.title || 'Unknown'}
                     </p>
                     <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
-                      {t.lastMessage?.timestamp ? formatTime(t.lastMessage.timestamp) : ''}
+                      {t.last_message_at ? formatTime(t.last_message_at) : ''}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <p className={`text-xs truncate ${
                       hasUnread ? 'text-gray-900 font-medium' : 'text-gray-600'
                     }`}>
-                      {t.lastMessage?.content || t.lastMessage?.metadata?.fileName || t.lastMessage?.type || 'No messages'}
+                      {(t as any).last_message?.content || 'No messages'}
                     </p>
                     {hasUnread && (
                       <span className="ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold bg-purple-600 text-white flex-shrink-0">

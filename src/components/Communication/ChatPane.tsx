@@ -6,15 +6,16 @@ import MessageTemplateSelector from './MessageTemplateSelector';
 import AIMessageAssistant from './AIMessageAssistant';
 import FileShareComponent from './FileShareComponent';
 import VoiceNoteRecorder from './VoiceNoteRecorder';
-import { Message, ConversationThread } from '@/mocks/messages';
+import { Message, Conversation } from '@/services/messages';
 import { MessagesService } from '@/services/messages';
+import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'react-toastify';
 
 interface ChatPaneProps {
   messages: Message[];
   onSend: (text: string) => void;
   className?: string;
-  selectedThread?: ConversationThread;
+  selectedThread?: Conversation;
 }
 
 const ChatPane: React.FC<ChatPaneProps> = ({ messages, onSend, className = '', selectedThread }) => {
@@ -25,6 +26,7 @@ const ChatPane: React.FC<ChatPaneProps> = ({ messages, onSend, className = '', s
   const [showFiles, setShowFiles] = useState(false);
   const [showVoice, setShowVoice] = useState(false);
   const [currentMessage, setCurrentMessage] = useState('');
+  const { user } = useAuthStore();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -122,8 +124,8 @@ const ChatPane: React.FC<ChatPaneProps> = ({ messages, onSend, className = '', s
                     {selectedThread.title?.charAt(0).toUpperCase() || '?'}
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-gray-900">{selectedThread.title || 'Conversation'}</h3>
-                    <p className="text-xs text-gray-600">WhatsApp Business</p>
+                    <h3 className="text-base font-semibold text-gray-900">{selectedThread.title || selectedThread.participant?.name || 'Conversation'}</h3>
+                    <p className="text-xs text-gray-600">Internal Message</p>
                   </div>
                 </>
               )}
@@ -221,7 +223,10 @@ const ChatPane: React.FC<ChatPaneProps> = ({ messages, onSend, className = '', s
             </div>
           ) : (
             messages.map((m) => {
-              const isUser = m.senderId.startsWith('user-');
+              // Get current user ID from auth store
+              const currentUserId = user?.id || '';
+              const isUser = m.sender_id === currentUserId || (m.sender as any)?.id === currentUserId;
+              
               return (
                 <div key={m.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[75%] sm:max-w-[65%] rounded-2xl px-4 py-2.5 shadow-sm ${
@@ -230,17 +235,30 @@ const ChatPane: React.FC<ChatPaneProps> = ({ messages, onSend, className = '', s
                       : 'bg-white border border-gray-200 text-gray-900'
                   }`}>
                     {m.type === 'text' && <p className="text-sm leading-relaxed">{m.content}</p>}
-                    {m.type === 'image' && (
+                    {m.type === 'image' && m.attachments && m.attachments.length > 0 && (
                       <img 
-                        src={m.metadata?.imageUrl} 
-                        alt={m.metadata?.fileName || 'image'} 
+                        src={m.attachments[0]?.url} 
+                        alt={m.attachments[0]?.name || 'image'} 
                         className="rounded-lg max-w-full h-auto" 
                       />
+                    )}
+                    {m.type === 'file' && m.attachments && m.attachments.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4" />
+                        <a 
+                          href={m.attachments[0]?.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-sm underline"
+                        >
+                          {m.attachments[0]?.name || 'File'}
+                        </a>
+                      </div>
                     )}
                     <div className={`mt-1.5 text-[10px] flex items-center justify-end gap-1 ${
                       isUser ? 'text-purple-100' : 'text-gray-500'
                     }`}>
-                      {new Date(m.timestamp).toLocaleTimeString('en-US', { 
+                      {m.created_at && new Date(m.created_at).toLocaleTimeString('en-US', { 
                         hour: 'numeric', 
                         minute: '2-digit',
                         hour12: true 
