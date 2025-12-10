@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { MessageSquare, Users, Clock, CheckCircle2, Search, Filter, MoreVertical, Bell } from 'lucide-react';
 import ThreadList from '@/components/Communication/ThreadList';
@@ -7,6 +7,8 @@ import NotificationCenter from '@/components/Communication/NotificationCenter';
 import MessageSearch from '@/components/Communication/MessageSearch';
 import { MessagesService, Message, Conversation } from '@/services/messages';
 import { NotificationService } from '@/services/notifications';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { useAuthStore } from '@/stores/authStore';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -19,6 +21,8 @@ const ConversationsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  const { user } = useAuthStore();
+  const [useWebSocketEnabled, setUseWebSocketEnabled] = useState(true);
 
   useEffect(() => {
     loadThreads();
@@ -36,19 +40,60 @@ const ConversationsPage: React.FC = () => {
     if (!selectedId && threads.length > 0) setSelectedId(threads[0].id);
   }, [threads, selectedId]);
 
+  // Handle incoming messages via WebSocket
+  const handleIncomingMessage = useCallback((data: any) => {
+    // Only add message if it's for the current conversation
+    if (data.conversation_id === selectedId) {
+      setMessages((prev) => {
+        // Check if message already exists
+        if (prev.some((m) => m.id === data.id)) {
+          return prev;
+        }
+        // Add new message
+        return [...prev, data as Message];
+      });
+      // Refresh threads to update unread counts
+      loadThreads();
+    } else {
+      // Message for different conversation, just refresh threads
+      loadThreads();
+    }
+  }, [selectedId]);
+
+  // Handle incoming notifications via WebSocket
+  const handleIncomingNotification = useCallback((data: any) => {
+    setUnreadNotificationCount((prev) => prev + 1);
+    // Show toast notification
+    toast.info(data.title || 'New notification', {
+      position: 'top-right',
+    });
+  }, []);
+
+  // Set up WebSocket connection
+  useWebSocket({
+    onMessage: handleIncomingMessage,
+    onNotification: handleIncomingNotification,
+    conversationId: selectedId,
+    userId: user?.id,
+    companyId: user?.company_id,
+    enabled: useWebSocketEnabled,
+  });
+
   useEffect(() => {
     if (selectedId) {
       loadMessages(selectedId);
       
-      // Poll for new messages every 3 seconds when a conversation is selected
+      // Fallback polling if WebSocket is disabled or fails (every 5 seconds)
       const messageInterval = setInterval(() => {
-        loadMessages(selectedId);
-        loadThreads(); // Also refresh thread list to update unread counts
-      }, 3000);
+        if (!useWebSocketEnabled) {
+          loadMessages(selectedId);
+          loadThreads();
+        }
+      }, 5000);
       
       return () => clearInterval(messageInterval);
     }
-  }, [selectedId]);
+  }, [selectedId, useWebSocketEnabled]);
 
   const loadThreads = async () => {
     try {
